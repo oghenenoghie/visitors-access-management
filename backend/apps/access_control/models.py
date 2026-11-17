@@ -138,6 +138,10 @@ class AccessEventStatus(models.TextChoices):
     OVERRIDDEN = "overridden", "Administrator override"
 
 
+class ImmutableAccessEventError(Exception):
+    pass
+
+
 class AccessEvent(BaseModel):
     estate = models.ForeignKey("estates.Estate", on_delete=models.PROTECT, related_name="access_events")
     invitation = models.ForeignKey(
@@ -173,3 +177,11 @@ class AccessEvent(BaseModel):
                 name="access_event_exit_requires_entry",
             )
         ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise ImmutableAccessEventError("Access events cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableAccessEventError("Access events cannot be deleted.")
