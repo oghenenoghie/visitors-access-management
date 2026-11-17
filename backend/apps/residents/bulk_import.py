@@ -36,7 +36,9 @@ def _parse_csv(uploaded_file, expected_headers):
     rows = []
     for row_number, row in enumerate(reader, start=2):
         if row_number - 1 > MAX_IMPORT_ROWS:
-            raise ValidationError({"file": f"CSV cannot contain more than {MAX_IMPORT_ROWS} data rows."})
+            raise ValidationError(
+                {"file": f"CSV cannot contain more than {MAX_IMPORT_ROWS} data rows."}
+            )
         if None in row:
             raise ValidationError(
                 {"file": f"Row {row_number} contains more values than the CSV headings."}
@@ -62,7 +64,11 @@ def _validate_units(estate, uploaded_file):
             )
         except (ValueError, Property.DoesNotExist):
             errors.append(
-                {"row": row_number, "field": "property_id", "message": "Property is not active in this estate."}
+                {
+                    "row": row_number,
+                    "field": "property_id",
+                    "message": "Property is not active in this estate.",
+                }
             )
             continue
         unit_number = row["unit_number"]
@@ -70,18 +76,32 @@ def _validate_units(estate, uploaded_file):
         floor = row.get("floor", "")
         if len(unit_number) > 40 or len(block) > 40 or len(floor) > 30:
             errors.append(
-                {"row": row_number, "field": "unit_number", "message": "Unit number, block or floor exceeds its allowed length."}
+                {
+                    "row": row_number,
+                    "field": "unit_number",
+                    "message": "Unit number, block or floor exceeds its allowed length.",
+                }
             )
             continue
         if not unit_number:
-            errors.append({"row": row_number, "field": "unit_number", "message": "Unit number is required."})
+            errors.append(
+                {
+                    "row": row_number,
+                    "field": "unit_number",
+                    "message": "Unit number is required.",
+                }
+            )
             continue
         key = (str(property_id), block, unit_number.casefold())
         if key in seen or ResidentialUnit.objects.filter(
             property=property_record, block=block, unit_number__iexact=unit_number
         ).exists():
             errors.append(
-                {"row": row_number, "field": "unit_number", "message": "This unit already exists in the property or CSV."}
+                {
+                    "row": row_number,
+                    "field": "unit_number",
+                    "message": "This unit already exists in the property or CSV.",
+                }
             )
             continue
         seen.add(key)
@@ -109,24 +129,52 @@ def _validate_residents(estate, uploaded_file):
         try:
             email_validator(email)
         except DjangoValidationError:
-            errors.append({"row": row_number, "field": "email", "message": "Enter a valid email address."})
+            errors.append(
+                {
+                    "row": row_number,
+                    "field": "email",
+                    "message": "Enter a valid email address.",
+                }
+            )
             continue
         if len(email) > 254 or len(first_name) > 150 or len(last_name) > 150 or len(phone) > 16:
             errors.append(
-                {"row": row_number, "field": "email", "message": "A field exceeds its maximum allowed length."}
+                {
+                    "row": row_number,
+                    "field": "email",
+                    "message": "A field exceeds its maximum allowed length.",
+                }
             )
             continue
         if not first_name or not last_name:
-            errors.append({"row": row_number, "field": "name", "message": "First and last name are required."})
+            errors.append(
+                {
+                    "row": row_number,
+                    "field": "name",
+                    "message": "First and last name are required.",
+                }
+            )
             continue
         if email.casefold() in seen or User.objects.filter(email__iexact=email).exists():
-            errors.append({"row": row_number, "field": "email", "message": "This email already exists in the system or CSV."})
+            errors.append(
+                {
+                    "row": row_number,
+                    "field": "email",
+                    "message": "This email already exists in the system or CSV.",
+                }
+            )
             continue
         if phone:
             try:
                 phone_validator(phone)
             except DjangoValidationError:
-                errors.append({"row": row_number, "field": "phone_number", "message": "Enter a valid phone number."})
+                errors.append(
+                    {
+                        "row": row_number,
+                        "field": "phone_number",
+                        "message": "Enter a valid phone number.",
+                    }
+                )
                 continue
         seen.add(email.casefold())
         valid.append(
@@ -161,7 +209,12 @@ def process_bulk_import(*, estate, import_type, uploaded_file, dry_run, actor, r
     if dry_run:
         return result
     if errors:
-        raise ValidationError({"message": "Import was not committed because validation errors remain.", **result})
+        raise ValidationError(
+            {
+                "message": "Import was not committed because validation errors remain.",
+                **result,
+            }
+        )
     if import_type == "units":
         ResidentialUnit.objects.bulk_create(
             [ResidentialUnit(**row) for row in valid], batch_size=250
