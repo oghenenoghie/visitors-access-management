@@ -1,6 +1,5 @@
 from django.db import transaction
 from django.db.models import Q
-from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.audit_logs.services import record
