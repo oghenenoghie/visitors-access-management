@@ -41,14 +41,10 @@ class ResidentRegistrationView(APIView):
         serializer = ResidentRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         profile = register_resident(data=serializer.validated_data, request=request)
-        return Response(
-            ResidentProfileSerializer(profile).data, status=status.HTTP_201_CREATED
-        )
+        return Response(ResidentProfileSerializer(profile).data, status=status.HTTP_201_CREATED)
 
 
-class ResidentViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
-):
+class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = ResidentProfileSerializer
     queryset = ResidentProfile.objects.none()
     filterset_fields = ["estate", "status"]
@@ -67,15 +63,17 @@ class ResidentViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = ResidentProfile.objects.select_related(
-            "user", "estate", "reviewed_by"
-        )
+        queryset = ResidentProfile.objects.select_related("user", "estate", "reviewed_by")
         if user.is_platform_admin:
             return queryset
-        readable_estate_ids = EstateMembership.objects.active().filter(
-            user=user,
-            role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
-        ).values("estate_id")
+        readable_estate_ids = (
+            EstateMembership.objects.active()
+            .filter(
+                user=user,
+                role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
+            )
+            .values("estate_id")
+        )
         if readable_estate_ids.exists():
             return queryset.filter(estate_id__in=readable_estate_ids)
         return queryset.filter(user=user, status=ResidentStatus.APPROVED)
@@ -108,9 +106,7 @@ class ResidentViewSet(
     def documents(self, request, pk=None):
         profile = self.get_object()
         if request.method == "GET":
-            documents = profile.identity_documents.filter(
-                status=ResidentDocumentStatus.ACTIVE
-            )
+            documents = profile.identity_documents.filter(status=ResidentDocumentStatus.ACTIVE)
             return Response(ResidentIdentityDocumentSerializer(documents, many=True).data)
 
         serializer = ResidentDocumentUploadSerializer(data=request.data)
