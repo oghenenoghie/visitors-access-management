@@ -1,8 +1,5 @@
 import hashlib
 import uuid
-from pathlib import Path
-from io import BytesIO
-
 from cryptography.fernet import Fernet, InvalidToken
 from django.conf import settings
 from django.core.files.base import ContentFile
