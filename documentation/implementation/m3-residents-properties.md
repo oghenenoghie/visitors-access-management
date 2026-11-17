@@ -90,7 +90,7 @@ Send multipart fields `estate_id`, `file`, and optional `dry_run`. Use `dry_run=
 
 ## M3 verification result
 
-<badge>CI passed</badge>
+**CI status: passed**
 
 - Ruff lint and format: passed.
 - Django system check: passed.
