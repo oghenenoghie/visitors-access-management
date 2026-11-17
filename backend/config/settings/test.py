@@ -17,3 +17,12 @@ ALLOWED_HOSTS = ["testserver", "localhost"]
 API_DOCS_ENABLED = True
 CELERY_TASK_ALWAYS_EAGER = True
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
+
+
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    "DEFAULT_THROTTLE_RATES": {
+        **REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],
+        "resident_registration": "1000/hour",
+    },
+}
