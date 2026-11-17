@@ -70,7 +70,7 @@ For check-out, send `gate_device` and `invitation`. For override, send those fie
 - A gate must be active and belong to an estate where the authenticated officer has an active security-officer, security-supervisor or estate-admin membership.
 - Only the invitation creator or an estate administrator can cancel it.
 - Only security supervisors and estate administrators can override a failed/exceptional admission. Platform administrators can operate across estates.
-- A supervisor override consumes the pass use and marks its credential consumed to prevent a normal QR scan from reusing an override admission.
+- A supervisor override consumes one pass use. Single-use or exhausted credentials become consumed; multi-use credentials retain any remaining uses after the visitor exits.
 - Suspending a resident cancels all their active passes immediately. This is the selected policy for already-issued credentials.
 - A verification scan does not consume a use. A successful check-in does.
 - Rejected gate attempts are persisted as access events and audit records. Check-in rejection responses return the recorded event so the transaction does not roll back the evidence.
