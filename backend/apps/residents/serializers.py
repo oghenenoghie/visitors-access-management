@@ -38,9 +38,7 @@ class ResidentRegistrationSerializer(serializers.Serializer):
         return value
 
     def validate_identity_document(self, uploaded_file):
-        document_type = self.initial_data.get(
-            "identity_document_type", ResidentDocumentType.OTHER
-        )
+        document_type = self.initial_data.get("identity_document_type", ResidentDocumentType.OTHER)
         validator = ResidentDocumentUploadSerializer(
             data={"document_type": document_type, "file": uploaded_file}
         )
@@ -72,9 +70,20 @@ class ResidentProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResidentProfile
         fields = [
-            "id", "user_id", "email", "first_name", "last_name", "phone_number",
-            "estate_id", "estate_name", "estate_code", "status", "submitted_at",
-            "reviewed_at", "reviewed_by_email", "review_note",
+            "id",
+            "user_id",
+            "email",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "estate_id",
+            "estate_name",
+            "estate_code",
+            "status",
+            "submitted_at",
+            "reviewed_at",
+            "reviewed_by_email",
+            "review_note",
         ]
         read_only_fields = fields
 
