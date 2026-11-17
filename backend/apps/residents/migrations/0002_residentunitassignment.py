@@ -37,11 +37,6 @@ class Migration(migrations.Migration):
                         condition=models.Q(("ends_on__isnull", True), ("ends_on__gte", models.F("starts_on")), _connector="OR"),
                         name="residents_assignment_valid_dates",
                     ),
-                    models.UniqueConstraint(
-                        fields=("resident",),
-                        condition=models.Q(("is_primary", True), ("status", "active")),
-                        name="residents_one_active_primary_unit",
-                    ),
                 ],
             },
         ),
