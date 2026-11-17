@@ -60,10 +60,14 @@ class ResidentUnitAssignmentViewSet(
         )
         if user.is_platform_admin:
             return queryset
-        readable_estate_ids = EstateMembership.objects.active().filter(
-            user=user,
-            role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
-        ).values("estate_id")
+        readable_estate_ids = (
+            EstateMembership.objects.active()
+            .filter(
+                user=user,
+                role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
+            )
+            .values("estate_id")
+        )
         if readable_estate_ids.exists():
             return queryset.filter(resident__estate_id__in=readable_estate_ids)
         return queryset.filter(
