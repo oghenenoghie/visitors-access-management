@@ -434,7 +434,13 @@ def manual_override(*, invitation, gate, actor, reason, request):
         raise ValidationError({"invitation": "This visitor is already checked in."})
     if credential:
         credential.uses_count = min(invitation.max_uses, credential.uses_count + 1)
-        credential.status = CredentialStatus.CONSUMED
+        if (
+            invitation.access_type == AccessType.SINGLE_USE
+            or credential.uses_count >= invitation.max_uses
+        ):
+            credential.status = CredentialStatus.CONSUMED
+        else:
+            credential.status = CredentialStatus.ACTIVE
         credential.save(update_fields=["uses_count", "status", "updated_at"])
     event = AccessEvent.objects.create(
         estate=gate.estate,
