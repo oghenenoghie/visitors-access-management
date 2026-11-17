@@ -68,7 +68,6 @@ class InvitationListCreateView(generics.ListCreateAPIView):
         return Response(payload, status=status.HTTP_201_CREATED)
 
 
-
 class InvitationDetailView(generics.RetrieveAPIView):
     serializer_class = VisitorInvitationSerializer
     permission_classes = [IsAuthenticated]
@@ -102,6 +101,7 @@ class InvitationCancelView(APIView):
             and not request.user.is_platform_admin
         ):
             from rest_framework.exceptions import PermissionDenied
+
             raise PermissionDenied(
                 "Only the creator or an estate administrator may cancel this invitation."
             )
@@ -113,9 +113,7 @@ class GateVerifyView(APIView):
     throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
-    @extend_schema(
-        request=GateVerifySerializer, responses={200: GateVerifyResponseSerializer}
-    )
+    @extend_schema(request=GateVerifySerializer, responses={200: GateVerifyResponseSerializer})
     def post(self, request):
         serializer = GateVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -142,12 +140,15 @@ class GateCheckInView(APIView):
         serializer = GateCheckInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         gate = _gate_for_actor(
-            actor=request.user, gate_id=serializer.validated_data["gate_device"],
+            actor=request.user,
+            gate_id=serializer.validated_data["gate_device"],
             allowed_roles=GateRolePermission.allowed_roles,
         )
         event = check_in(
-            value=serializer.validated_data["credential"], gate=gate,
-            actor=request.user, request=request,
+            value=serializer.validated_data["credential"],
+            gate=gate,
+            actor=request.user,
+            request=request,
         )
         return Response(AccessEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
@@ -160,7 +161,8 @@ class GateCheckOutView(APIView):
         serializer = GateCheckOutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         gate = _gate_for_actor(
-            actor=request.user, gate_id=serializer.validated_data["gate_device"],
+            actor=request.user,
+            gate_id=serializer.validated_data["gate_device"],
             allowed_roles=GateRolePermission.allowed_roles,
         )
         invitation = get_object_or_404(
@@ -180,7 +182,8 @@ class GateOverrideView(APIView):
         serializer = GateOverrideSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         gate = _gate_for_actor(
-            actor=request.user, gate_id=serializer.validated_data["gate_device"],
+            actor=request.user,
+            gate_id=serializer.validated_data["gate_device"],
             allowed_roles=[EstateRole.SECURITY_SUPERVISOR, EstateRole.ESTATE_ADMIN],
         )
         invitation = get_object_or_404(
