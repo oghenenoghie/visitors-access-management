@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from rest_framework.throttling import UserRateThrottle
 
 from apps.estates.models import EstateMembership, EstateRole, MembershipStatus
 
@@ -24,3 +25,9 @@ class CanOverrideAccess(BasePermission):
             status=MembershipStatus.ACTIVE,
             estate__status="active",
         ).exists()
+
+
+class GateAttemptThrottle(UserRateThrottle):
+    """Limit credential guessing per authenticated gate officer."""
+
+    rate = "30/min"
