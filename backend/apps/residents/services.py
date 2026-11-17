@@ -46,8 +46,10 @@ def register_resident(*, data, request):
 
 
 def _review(*, profile, actor, request, target_status, note=""):
-    profile = ResidentProfile.objects.select_for_update().select_related("user", "estate").get(
-        pk=profile.pk
+    profile = (
+        ResidentProfile.objects.select_for_update()
+        .select_related("user", "estate")
+        .get(pk=profile.pk)
     )
     if profile.status != ResidentStatus.PENDING:
         raise ValidationError({"status": "Only pending resident registrations can be reviewed."})
@@ -121,17 +123,22 @@ def suspend_resident(*, profile, actor, request, note=""):
     )
     if profile.status != ResidentStatus.APPROVED:
         raise ValidationError({"status": "Only approved residents can be suspended."})
-    membership = EstateMembership.objects.select_for_update().filter(
-        user=profile.user, estate=profile.estate, role=EstateRole.RESIDENT
-    ).first()
+    membership = (
+        EstateMembership.objects.select_for_update()
+        .filter(user=profile.user, estate=profile.estate, role=EstateRole.RESIDENT)
+        .first()
+    )
     if membership is None:
         raise ValidationError({"membership": "The resident membership could not be found."})
     membership.status = MembershipStatus.SUSPENDED
     membership.save(update_fields=["status", "updated_at"])
     profile.status = ResidentStatus.SUSPENDED
-    if not EstateMembership.objects.active().filter(user=profile.user).exclude(
-        estate=profile.estate
-    ).exists():
+    if (
+        not EstateMembership.objects.active()
+        .filter(user=profile.user)
+        .exclude(estate=profile.estate)
+        .exists()
+    ):
         profile.user.is_active = False
         profile.user.save(update_fields=["is_active", "updated_at"])
     profile.reviewed_at = timezone.now()
