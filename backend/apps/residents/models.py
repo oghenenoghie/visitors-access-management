@@ -47,9 +47,7 @@ class ResidentProfile(BaseModel):
     class Meta:
         ordering = ["-submitted_at"]
         constraints = [
-            models.UniqueConstraint(
-                fields=["user", "estate"], name="residents_user_estate_unique"
-            )
+            models.UniqueConstraint(fields=["user", "estate"], name="residents_user_estate_unique")
         ]
         indexes = [
             models.Index(fields=["estate", "status"], name="residents_estate_status"),
