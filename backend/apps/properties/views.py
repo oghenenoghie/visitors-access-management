@@ -34,16 +34,16 @@ class EstateScopedWriteViewSet(
             raise NotFound()
 
     def perform_create(self, serializer):
-        estate_id = serializer.validated_data.get("estate_id")
-        if estate_id is None and "property" in serializer.validated_data:
-            estate_id = serializer.validated_data["property"].estate_id
-        self._check_estate_write(estate_id)
+        estate = serializer.validated_data.get("estate")
+        if estate is None and "property" in serializer.validated_data:
+            estate = serializer.validated_data["property"].estate
+        self._check_estate_write(estate.pk)
         with transaction.atomic():
             instance = serializer.save()
             record(
                 action=f"{instance._meta.model_name}.created",
                 actor=self.request.user,
-                estate_id=estate_id,
+                estate=estate,
                 resource=instance,
                 new_values=serializer.data,
                 request=self.request,
@@ -51,17 +51,15 @@ class EstateScopedWriteViewSet(
 
     def perform_update(self, serializer):
         instance = serializer.instance
-        estate_id = (
-            instance.estate_id if hasattr(instance, "estate_id") else instance.property.estate_id
-        )
-        self._check_estate_write(estate_id)
+        estate = instance.estate if hasattr(instance, "estate_id") else instance.property.estate
+        self._check_estate_write(estate.pk)
         with transaction.atomic():
             previous = self.get_serializer(instance).data
             updated = serializer.save()
             record(
                 action=f"{updated._meta.model_name}.updated",
                 actor=self.request.user,
-                estate_id=estate_id,
+                estate=estate,
                 resource=updated,
                 previous_values=previous,
                 new_values=serializer.data,
