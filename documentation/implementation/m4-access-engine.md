@@ -75,7 +75,7 @@ For check-out, send `gate_device` and `invitation`. For override, send those fie
 - A verification scan does not consume a use. A successful check-in does.
 - Rejected gate attempts are persisted as access events and audit records. Check-in rejection responses return the recorded event so the transaction does not roll back the evidence.
 - Access events cannot be updated or deleted through the ORM; PostgreSQL enforces append-only behaviour with a trigger.
-- The numeric code has eight digits. The database unique constraints detect collisions; a retry strategy for the exceptionally rare collision remains a hardening item before production scale.
+- The numeric code has eight digits. Unique hash constraints detect collisions and issuance retries up to five times before returning a controlled validation error.
 - Notifications are not sent in this slice. Push notification delivery and resident-facing history are integration work for later milestones.
 
 ## Gate provisioning
