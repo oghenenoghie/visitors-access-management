@@ -17,8 +17,10 @@ from .models import (
 def create_assignment(
     *, resident, unit, relationship, is_primary, starts_on, ends_on, actor, request
 ):
-    resident = ResidentProfile.objects.select_for_update().select_related("estate", "user").get(
-        pk=resident.pk
+    resident = (
+        ResidentProfile.objects.select_for_update()
+        .select_related("estate", "user")
+        .get(pk=resident.pk)
     )
     unit = ResidentialUnit.objects.select_related("property", "property__estate").get(pk=unit.pk)
     if resident.status != ResidentStatus.APPROVED:
@@ -79,9 +81,11 @@ def create_assignment(
 
 @transaction.atomic
 def end_assignment(*, assignment, ends_on, actor, request):
-    assignment = ResidentUnitAssignment.objects.select_for_update().select_related(
-        "resident__estate", "resident__user"
-    ).get(pk=assignment.pk)
+    assignment = (
+        ResidentUnitAssignment.objects.select_for_update()
+        .select_related("resident__estate", "resident__user")
+        .get(pk=assignment.pk)
+    )
     if assignment.status != AssignmentStatus.ACTIVE:
         raise ValidationError({"status": "Only active assignments can be ended."})
     if ends_on < assignment.starts_on:
