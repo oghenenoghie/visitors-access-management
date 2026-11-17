@@ -1,4 +1,3 @@
-from django.db.models import Q
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -26,7 +25,11 @@ class ResidentRegistrationView(APIView):
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "resident_registration"
 
-    @extend_schema(request=ResidentRegistrationSerializer, responses={201: ResidentProfileSerializer}, auth=[])
+    @extend_schema(
+        request=ResidentRegistrationSerializer,
+        responses={201: ResidentProfileSerializer},
+        auth=[],
+    )
     def post(self, request):
         serializer = ResidentRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -36,11 +39,18 @@ class ResidentRegistrationView(APIView):
         )
 
 
-class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class ResidentViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     serializer_class = ResidentProfileSerializer
     queryset = ResidentProfile.objects.none()
     filterset_fields = ["estate", "status"]
-    search_fields = ["user__email", "user__first_name", "user__last_name", "user__phone_number"]
+    search_fields = [
+        "user__email",
+        "user__first_name",
+        "user__last_name",
+        "user__phone_number",
+    ]
     ordering_fields = ["submitted_at", "reviewed_at", "status"]
 
     def get_permissions(self):
