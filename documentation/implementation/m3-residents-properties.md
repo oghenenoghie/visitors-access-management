@@ -20,6 +20,15 @@ M3 builds the estate's property inventory first, then resident identity and unit
 - API routes: `GET/POST/PATCH /api/v1/properties/` and `GET/POST/PATCH /api/v1/residential-units/` (detail routes follow the DRF router conventions).
 - Initial API tests cover creation, resident read-only access, cross-estate isolation, cross-estate parent rejection and non-deletion.
 
+## Property API contract
+
+- `/api/v1/properties/`: list/retrieve estate-scoped locations; create/update for platform and estate administrators.
+- `/api/v1/residential-units/`: list/retrieve estate-scoped units; create/update for platform and estate administrators.
+- Property types: `street`, `block`, `building`, `compound`. A property may have a parent location, but the parent must belong to the same estate.
+- Unit identity is unique within its property by `(property, block, unit_number)`.
+- Property and unit deletion is not exposed. Use the inactive status to preserve references and history.
+- Resident/household memberships currently permit scoped reads of their estate's property inventory; writes remain administrator-only.
+
 ## Remaining M3 work
 
 1. Resident profile and status model, linked to the existing custom user and an estate.
