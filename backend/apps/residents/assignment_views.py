@@ -1,4 +1,5 @@
 from rest_framework import mixins, status, viewsets
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
@@ -95,6 +96,10 @@ class ResidentUnitAssignmentViewSet(
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(
+        request=AssignmentEndSerializer,
+        responses=ResidentUnitAssignmentSerializer,
+    )
     @action(detail=True, methods=["post"])
     def end(self, request, pk=None):
         assignment = self.get_object()
