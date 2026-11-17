@@ -35,6 +35,8 @@ class InvitationListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return VisitorInvitation.objects.none()
         user = self.request.user
         qs = VisitorInvitation.objects.for_user(user).select_related(
             "visitor", "resident", "unit", "estate", "created_by"
@@ -73,6 +75,8 @@ class InvitationDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return VisitorInvitation.objects.none()
         user = self.request.user
         queryset = VisitorInvitation.objects.for_user(user).select_related(
             "visitor", "resident", "unit", "estate", "created_by"
@@ -206,6 +210,8 @@ class GateActivityView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, GateRolePermission]
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return AccessEvent.objects.none()
         user = self.request.user
         queryset = AccessEvent.objects.all()
         if not user.is_platform_admin:
