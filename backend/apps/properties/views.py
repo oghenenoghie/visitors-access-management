@@ -75,9 +75,7 @@ class PropertyViewSet(EstateScopedWriteViewSet):
     ordering_fields = ["name", "created_at"]
 
     def get_queryset(self):
-        return Property.objects.for_user(self.request.user).select_related(
-            "estate", "parent"
-        )
+        return Property.objects.for_user(self.request.user).select_related("estate", "parent")
 
 
 class ResidentialUnitViewSet(EstateScopedWriteViewSet):
