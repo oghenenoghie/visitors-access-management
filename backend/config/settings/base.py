@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     "apps.common",
     "apps.users",
     "apps.estates",
+    "apps.properties",
     "apps.audit_logs",
     "apps.authentication",
 ]
