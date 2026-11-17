@@ -14,14 +14,10 @@ def csv_file(name, content):
     return SimpleUploadedFile(name, content.encode("utf-8"), content_type="text/csv")
 
 
-def test_unit_import_dry_run_does_not_write_records(
-    api_client, auth, make_estate, make_member
-):
+def test_unit_import_dry_run_does_not_write_records(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, "estate_admin")
-    property_record = Property.objects.create(
-        estate=estate, name="Block A", property_type="block"
-    )
+    property_record = Property.objects.create(estate=estate, name="Block A", property_type="block")
     auth(admin)
 
     response = api_client.post(
@@ -43,9 +39,7 @@ def test_unit_import_dry_run_does_not_write_records(
     assert not ResidentialUnit.objects.exists()
 
 
-def test_unit_import_commit_creates_units_atomically(
-    api_client, auth, make_estate, make_member
-):
+def test_unit_import_commit_creates_units_atomically(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, "estate_admin")
     property_record = Property.objects.create(
@@ -131,9 +125,7 @@ def test_resident_import_creates_pending_inactive_profiles(
     assert not EstateMembership.objects.filter(user=profile.user, estate=estate).exists()
 
 
-def test_admin_cannot_import_into_another_estate(
-    api_client, auth, make_estate, make_member
-):
+def test_admin_cannot_import_into_another_estate(api_client, auth, make_estate, make_member):
     own, other = make_estate(), make_estate()
     admin = make_member(own, "estate_admin")
     auth(admin)
