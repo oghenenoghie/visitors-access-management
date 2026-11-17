@@ -24,7 +24,9 @@ class PropertyQuerySet(EstateScopedQuerySet):
 class Property(BaseModel):
     """An estate location node: street, block, building or compound."""
 
-    estate = models.ForeignKey("estates.Estate", on_delete=models.PROTECT, related_name="properties")
+    estate = models.ForeignKey(
+        "estates.Estate", on_delete=models.PROTECT, related_name="properties"
+    )
     parent = models.ForeignKey(
         "self", null=True, blank=True, on_delete=models.PROTECT, related_name="children"
     )
@@ -45,7 +47,12 @@ class Property(BaseModel):
                 nulls_distinct=False,
             )
         ]
-        indexes = [models.Index(fields=["estate", "property_type", "status"], name="properties_estate_type_status")]
+        indexes = [
+            models.Index(
+                fields=["estate", "property_type", "status"],
+                name="properties_estate_type_status",
+            )
+        ]
 
     def clean(self):
         if self.parent_id and self.parent.estate_id != self.estate_id:
