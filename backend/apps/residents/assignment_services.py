@@ -32,13 +32,21 @@ def create_assignment(
 
     overlaps = ResidentUnitAssignment.objects.filter(
         resident=resident,
+        unit=unit,
         status=AssignmentStatus.ACTIVE,
     ).filter(Q(ends_on__isnull=True) | Q(ends_on__gte=starts_on))
     if ends_on:
         overlaps = overlaps.filter(starts_on__lte=ends_on)
+    primary_overlaps = ResidentUnitAssignment.objects.none()
     if is_primary:
-        overlaps = overlaps.filter(is_primary=True)
-    if overlaps.exists():
+        primary_overlaps = ResidentUnitAssignment.objects.filter(
+            resident=resident,
+            status=AssignmentStatus.ACTIVE,
+            is_primary=True,
+        ).filter(Q(ends_on__isnull=True) | Q(ends_on__gte=starts_on))
+        if ends_on:
+            primary_overlaps = primary_overlaps.filter(starts_on__lte=ends_on)
+    if overlaps.exists() or primary_overlaps.exists():
         raise ValidationError(
             {"assignment": "The requested dates overlap an existing active assignment."}
         )
