@@ -189,6 +189,8 @@ def _validation_result(credential, now):
 def verify_credential(*, value, gate, actor, request):
     now = timezone.now()
     credential = _lookup_credential(value)
+    if credential and credential.invitation.estate_id != gate.estate_id:
+        credential = None
     result = _validation_result(credential, now) if credential else "INVALID"
     invitation = credential.invitation if credential else None
     if result == "VALID" and AccessEvent.objects.filter(
@@ -232,6 +234,8 @@ def verify_credential(*, value, gate, actor, request):
 @transaction.atomic
 def check_in(*, value, gate, actor, request):
     credential = _lookup_credential(value)
+    if credential and credential.invitation.estate_id != gate.estate_id:
+        credential = None
     if credential is None:
         event = AccessEvent.objects.create(
             estate=gate.estate, gate_device=gate, officer=actor,
