@@ -24,6 +24,10 @@ class PropertySerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         estate = attrs.get("estate", getattr(self.instance, "estate", None))
         parent = attrs.get("parent", getattr(self.instance, "parent", None))
+        if self.instance and estate and estate.pk != self.instance.estate_id:
+            raise serializers.ValidationError(
+                {"estate_id": "A property cannot be moved to another estate."}
+            )
         if parent and self.instance and parent.pk == self.instance.pk:
             raise serializers.ValidationError({"parent_id": "A property cannot be its own parent."})
         if parent and estate and parent.estate_id != estate.id:
@@ -38,6 +42,13 @@ class ResidentialUnitSerializer(serializers.ModelSerializer):
     property_id = serializers.PrimaryKeyRelatedField(
         source="property", queryset=Property.objects.all()
     )
+
+    def validate_property_id(self, value):
+        if self.instance and value.estate_id != self.instance.property.estate_id:
+            raise serializers.ValidationError(
+                "A residential unit cannot be moved to another estate."
+            )
+        return value
 
     class Meta:
         model = ResidentialUnit
