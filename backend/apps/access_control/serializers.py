@@ -33,8 +33,16 @@ class VisitorInvitationSerializer(serializers.ModelSerializer):
     class Meta:
         model = VisitorInvitation
         fields = [
-            "id", "visitor_name", "visitor_phone", "unit", "unit_number",
-            "valid_from", "valid_until", "access_type", "max_uses", "status",
+            "id",
+            "visitor_name",
+            "visitor_phone",
+            "unit",
+            "unit_number",
+            "valid_from",
+            "valid_until",
+            "access_type",
+            "max_uses",
+            "status",
             "created_at",
         ]
         read_only_fields = fields
@@ -71,8 +79,14 @@ class AccessEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = AccessEvent
         fields = [
-            "id", "invitation", "visitor_name", "event_type", "status",
-            "occurred_at", "reason", "gate_device",
+            "id",
+            "invitation",
+            "visitor_name",
+            "event_type",
+            "status",
+            "occurred_at",
+            "reason",
+            "gate_device",
         ]
         read_only_fields = fields
 
