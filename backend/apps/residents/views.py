@@ -1,6 +1,7 @@
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
@@ -9,7 +10,12 @@ from rest_framework.views import APIView
 from apps.common.permissions import administered_estate_ids, has_estate_role
 from apps.estates.models import EstateRole
 
-from .models import ResidentProfile
+from .document_serializers import (
+    ResidentDocumentUploadSerializer,
+    ResidentIdentityDocumentSerializer,
+)
+from .document_storage import read_identity_document, store_identity_document
+from .models import ResidentDocumentStatus, ResidentIdentityDocument, ResidentProfile
 from .permissions import CanManageResidents
 from .serializers import (
     ResidentProfileSerializer,
@@ -87,6 +93,63 @@ class ResidentViewSet(
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
         return self._review(request, self.get_object(), reject_resident)
+
+    @action(
+        detail=True,
+        methods=["get", "post"],
+        url_path="documents",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def documents(self, request, pk=None):
+        profile = self.get_object()
+        if request.method == "GET":
+            documents = profile.identity_documents.filter(
+                status=ResidentDocumentStatus.ACTIVE
+            )
+            return Response(ResidentIdentityDocumentSerializer(documents, many=True).data)
+
+        serializer = ResidentDocumentUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        document = store_identity_document(
+            resident=profile,
+            uploaded_file=serializer.validated_data["file"],
+            document_type=serializer.validated_data["document_type"],
+            uploaded_by=request.user,
+            request=request,
+        )
+        return Response(
+            ResidentIdentityDocumentSerializer(document).data,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path=r"documents/(?P<document_id>[^/.]+)/download",
+    )
+    def download_document(self, request, pk=None, document_id=None):
+        profile = self.get_object()
+        document = get_object_or_404(
+            profile.identity_documents.filter(status=ResidentDocumentStatus.ACTIVE),
+            pk=document_id,
+        )
+        content = read_identity_document(document)
+        from apps.audit_logs.services import record
+
+        record(
+            action="resident.identity_document_viewed",
+            actor=request.user,
+            estate=profile.estate,
+            resource=document,
+            new_values={"document_type": document.document_type},
+            request=request,
+        )
+        return FileResponse(
+            content,
+            as_attachment=True,
+            filename=document.original_filename,
+            content_type=document.content_type,
+        )
 
     @action(detail=True, methods=["post"])
     def suspend(self, request, pk=None):
