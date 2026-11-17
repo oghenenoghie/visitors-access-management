@@ -2,8 +2,7 @@ from rest_framework import serializers
 
 from apps.properties.models import ResidentialUnit
 
-from .assignments import AssignmentRelationship, ResidentUnitAssignment
-from .models import ResidentProfile
+from .models import AssignmentRelationship, ResidentProfile, ResidentUnitAssignment
 
 
 class ResidentUnitAssignmentCreateSerializer(serializers.Serializer):
@@ -35,7 +34,7 @@ class AssignmentEndSerializer(serializers.Serializer):
 
 
 class ResidentUnitAssignmentSerializer(serializers.ModelSerializer):
-    resident_id = serializers.UUIDField(source="resident_id", read_only=True)
+    resident_id = serializers.UUIDField(read_only=True)
     resident_email = serializers.EmailField(source="resident.user.email", read_only=True)
     unit_id = serializers.UUIDField(read_only=True)
     unit_number = serializers.CharField(source="unit.unit_number", read_only=True)
