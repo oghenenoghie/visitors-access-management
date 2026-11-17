@@ -53,7 +53,7 @@ class InvitationListCreateView(generics.ListCreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        invitation, credential, qr_token, access_code = create_invitation(
+        invitation, _credential, qr_token, access_code = create_invitation(
             actor=request.user, data=serializer.validated_data, request=request
         )
         payload = {
