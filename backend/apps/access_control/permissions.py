@@ -5,7 +5,11 @@ from apps.estates.models import EstateMembership, EstateRole, MembershipStatus
 
 
 class GateRolePermission(BasePermission):
-    allowed_roles = [EstateRole.SECURITY_OFFICER, EstateRole.SECURITY_SUPERVISOR, EstateRole.ESTATE_ADMIN]
+    allowed_roles = [
+        EstateRole.SECURITY_OFFICER,
+        EstateRole.SECURITY_SUPERVISOR,
+        EstateRole.ESTATE_ADMIN,
+    ]
 
     def has_permission(self, request, view):
         user = request.user
