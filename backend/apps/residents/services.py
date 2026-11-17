@@ -156,11 +156,13 @@ def suspend_resident(*, profile, actor, request, note=""):
         InvitationStatus,
     )
 
-    credentials = AccessCredential.objects.select_for_update(of=("self",)).select_related(
-        "invitation", "invitation__estate"
-    ).filter(
-        invitation__resident=profile,
-        invitation__status=InvitationStatus.ACTIVE,
+    credentials = (
+        AccessCredential.objects.select_for_update(of=("self",))
+        .select_related("invitation", "invitation__estate")
+        .filter(
+            invitation__resident=profile,
+            invitation__status=InvitationStatus.ACTIVE,
+        )
     )
     for credential in credentials:
         invitation = credential.invitation
