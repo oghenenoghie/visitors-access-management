@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.common.permissions import administered_estate_ids, has_estate_role
-from apps.estates.models import EstateRole
+from apps.estates.models import EstateMembership, EstateRole
 from apps.properties.models import ResidentialUnit
 
 from .assignment_serializers import (
@@ -60,10 +60,12 @@ class ResidentUnitAssignmentViewSet(
         )
         if user.is_platform_admin:
             return queryset
-        if has_estate_role(user, [EstateRole.ESTATE_ADMIN]):
-            return queryset.filter(
-                resident__estate_id__in=administered_estate_ids(user)
-            )
+        readable_estate_ids = EstateMembership.objects.active().filter(
+            user=user,
+            role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
+        ).values("estate_id")
+        if readable_estate_ids.exists():
+            return queryset.filter(resident__estate_id__in=readable_estate_ids)
         return queryset.filter(
             resident__user=user,
             resident__status=ResidentStatus.APPROVED,
