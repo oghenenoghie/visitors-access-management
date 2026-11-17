@@ -60,7 +60,10 @@ def test_unit_import_commit_creates_units_atomically(
             "dry_run": "false",
             "file": csv_file(
                 "units.csv",
-                f"property_id,unit_number,block\n{property_record.pk},A-101,A\n{property_record.pk},A-102,A",
+                (
+                    "property_id,unit_number,block\n"
+                    f"{property_record.pk},A-101,A\n{property_record.pk},A-102,A"
+                ),
             ),
         },
         format="multipart",
