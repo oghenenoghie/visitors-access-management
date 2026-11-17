@@ -39,6 +39,7 @@ class ResidentRegistrationSerializer(serializers.Serializer):
             last_name=attrs["last_name"],
         )
         validate_password(attrs["password"], user=candidate)
+        attrs["estate"] = self.context["estate"]
         return attrs
 
 
