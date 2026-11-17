@@ -11,7 +11,6 @@ from apps.access_control.models import (
     AccessEvent,
     AccessEventStatus,
     AccessEventType,
-    GateDevice,
 )
 from apps.access_control.services import check_in
 from apps.estates.models import EstateRole
@@ -178,7 +177,6 @@ def test_resident_suspension_revokes_existing_passes(access_context):
     from apps.residents.services import suspend_resident
 
     issued = create_pass(access_context)
-    admin_client = gate_client(access_context["admin"])
     # The management endpoint is exercised by the service in this focused integration test.
     suspend_resident(
         profile=access_context["profile"],
@@ -192,7 +190,6 @@ def test_resident_suspension_revokes_existing_passes(access_context):
         format="json",
     )
     assert response.data["result"] == "REVOKED"
-    assert admin_client is not None
 
 
 def test_supervisor_override_requires_reason_and_records_event(access_context):
