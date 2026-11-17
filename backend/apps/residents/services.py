@@ -129,6 +129,11 @@ def suspend_resident(*, profile, actor, request, note=""):
     membership.status = MembershipStatus.SUSPENDED
     membership.save(update_fields=["status", "updated_at"])
     profile.status = ResidentStatus.SUSPENDED
+    if not EstateMembership.objects.active().filter(user=profile.user).exclude(
+        estate=profile.estate
+    ).exists():
+        profile.user.is_active = False
+        profile.user.save(update_fields=["is_active", "updated_at"])
     profile.reviewed_at = timezone.now()
     profile.reviewed_by = actor
     profile.review_note = note
