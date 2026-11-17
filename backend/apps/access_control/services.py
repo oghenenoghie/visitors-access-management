@@ -116,6 +116,9 @@ def create_invitation(*, actor, data, request):
 
 @transaction.atomic
 def cancel_invitation(*, invitation, actor, request):
+    credential = AccessCredential.objects.select_for_update().filter(
+        invitation_id=invitation.pk
+    ).first()
     invitation = VisitorInvitation.objects.select_for_update().select_related("estate").get(
         pk=invitation.pk
     )
@@ -123,7 +126,9 @@ def cancel_invitation(*, invitation, actor, request):
         raise ValidationError({"status": "Only active invitations can be cancelled."})
     invitation.status = InvitationStatus.CANCELLED
     invitation.save(update_fields=["status", "updated_at"])
-    AccessCredential.objects.filter(invitation=invitation).update(status=CredentialStatus.REVOKED)
+    if credential:
+        credential.status = CredentialStatus.REVOKED
+        credential.save(update_fields=["status", "updated_at"])
     record(
         action="invitation.cancelled",
         actor=actor,
@@ -317,6 +322,9 @@ def check_out(*, invitation, gate, actor, request):
 def manual_override(*, invitation, gate, actor, reason, request):
     if not reason or not reason.strip():
         raise ValidationError({"reason": "A justification is required."})
+    credential = AccessCredential.objects.select_for_update().filter(
+        invitation_id=invitation.pk
+    ).first()
     invitation = VisitorInvitation.objects.select_for_update().select_related("visitor").get(
         pk=invitation.pk
     )
@@ -329,9 +337,6 @@ def manual_override(*, invitation, gate, actor, reason, request):
         status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
     ).exclude(pk__in=exited_ids).exists():
         raise ValidationError({"invitation": "This visitor is already checked in."})
-    credential = AccessCredential.objects.select_for_update().filter(
-        invitation=invitation
-    ).first()
     if credential:
         credential.uses_count = min(invitation.max_uses, credential.uses_count + 1)
         credential.status = CredentialStatus.CONSUMED
