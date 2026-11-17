@@ -131,3 +131,25 @@ def test_duplicate_unit_location_is_rejected(
     ResidentialUnit.objects.create(property=parent, unit_number="12", block="A")
     with pytest.raises(IntegrityError), transaction.atomic():
         ResidentialUnit.objects.create(property=parent, unit_number="12", block="A")
+
+def test_property_cannot_be_moved_to_another_estate(
+    api_client, auth, make_estate, make_member
+):
+    from apps.properties.models import Property
+
+    own, other = make_estate(), make_estate()
+    admin = make_member(own, EstateRole.ESTATE_ADMIN)
+    item = Property.objects.create(
+        estate=own, name="Protected Street", property_type="street"
+    )
+    auth(admin)
+
+    response = api_client.patch(
+        f"{PROPERTIES}{item.pk}/",
+        {"estate_id": str(other.pk)},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    item.refresh_from_db()
+    assert item.estate_id == own.pk
