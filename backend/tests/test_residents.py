@@ -50,9 +50,7 @@ def test_registration_rejects_weak_password(api_client, make_estate):
     assert not ResidentProfile.objects.exists()
 
 
-def test_estate_admin_can_approve_pending_resident(
-    api_client, auth, make_estate, make_member
-):
+def test_estate_admin_can_approve_pending_resident(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     api_client.post(REGISTER, registration_payload(estate), format="json")
@@ -113,9 +111,7 @@ def test_resident_admin_list_is_scoped_to_administered_estates(
     assert response.json()["results"][0]["estate_id"] == str(estate.pk)
 
 
-def test_resident_can_only_retrieve_own_profile(
-    api_client, auth, make_estate, make_member
-):
+def test_resident_can_only_retrieve_own_profile(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     api_client.post(REGISTER, registration_payload(estate), format="json")
@@ -129,9 +125,7 @@ def test_resident_can_only_retrieve_own_profile(
     assert own.json()["id"] == str(profile.pk)
 
 
-def test_non_admin_cannot_approve_resident(
-    api_client, auth, make_estate, make_member
-):
+def test_non_admin_cannot_approve_resident(api_client, auth, make_estate, make_member):
     estate = make_estate()
     resident = make_member(estate, EstateRole.RESIDENT)
     api_client.post(REGISTER, registration_payload(estate), format="json")
