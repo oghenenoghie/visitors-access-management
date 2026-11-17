@@ -48,10 +48,6 @@ class ResidentRegistrationSerializer(serializers.Serializer):
         return validator.validated_data["file"]
 
     def validate(self, attrs):
-        if "identity_document_type" in attrs and "identity_document" not in attrs:
-            raise serializers.ValidationError(
-                {"identity_document": "Upload a file when specifying a document type."}
-            )
         candidate = User(
             email=attrs["email"],
             first_name=attrs["first_name"],
