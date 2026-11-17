@@ -20,9 +20,9 @@ CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"
 
 
 REST_FRAMEWORK = {
-    **REST_FRAMEWORK,
+    **REST_FRAMEWORK,  # noqa: F405
     "DEFAULT_THROTTLE_RATES": {
-        **REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],
+        **REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],  # noqa: F405
         "resident_registration": "1000/hour",
     },
 }
