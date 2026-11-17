@@ -93,9 +93,12 @@ def _validate_units(estate, uploaded_file):
             )
             continue
         key = (str(property_id), block, unit_number.casefold())
-        if key in seen or ResidentialUnit.objects.filter(
-            property=property_record, block=block, unit_number__iexact=unit_number
-        ).exists():
+        if (
+            key in seen
+            or ResidentialUnit.objects.filter(
+                property=property_record, block=block, unit_number__iexact=unit_number
+            ).exists()
+        ):
             errors.append(
                 {
                     "row": row_number,
