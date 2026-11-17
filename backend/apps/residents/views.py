@@ -10,7 +10,7 @@ from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from apps.common.permissions import administered_estate_ids, has_estate_role
-from apps.estates.models import EstateRole
+from apps.estates.models import EstateMembership, EstateRole
 
 from .document_serializers import (
     ResidentDocumentUploadSerializer,
@@ -73,8 +73,12 @@ class ResidentViewSet(
         )
         if user.is_platform_admin:
             return queryset
-        if has_estate_role(user, [EstateRole.ESTATE_ADMIN]):
-            return queryset.filter(estate_id__in=administered_estate_ids(user))
+        readable_estate_ids = EstateMembership.objects.active().filter(
+            user=user,
+            role__in=[EstateRole.ESTATE_ADMIN, EstateRole.ESTATE_MANAGER],
+        ).values("estate_id")
+        if readable_estate_ids.exists():
+            return queryset.filter(estate_id__in=readable_estate_ids)
         return queryset.filter(user=user, status=ResidentStatus.APPROVED)
 
     def _review(self, request, profile, service):
