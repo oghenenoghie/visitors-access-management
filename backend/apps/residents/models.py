@@ -93,11 +93,6 @@ class ResidentUnitAssignment(BaseModel):
                 condition=Q(ends_on__isnull=True) | Q(ends_on__gte=models.F("starts_on")),
                 name="residents_assignment_valid_dates",
             ),
-            models.UniqueConstraint(
-                fields=["resident"],
-                condition=Q(status=AssignmentStatus.ACTIVE, is_primary=True),
-                name="residents_one_active_primary_unit",
-            ),
         ]
         indexes = [
             models.Index(fields=["resident", "status"], name="residents_assignment_status"),
