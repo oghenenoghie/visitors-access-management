@@ -118,8 +118,10 @@ def reject_resident(*, profile, actor, request, note=""):
 
 @transaction.atomic
 def suspend_resident(*, profile, actor, request, note=""):
-    profile = ResidentProfile.objects.select_for_update().select_related("user", "estate").get(
-        pk=profile.pk
+    profile = (
+        ResidentProfile.objects.select_for_update()
+        .select_related("user", "estate")
+        .get(pk=profile.pk)
     )
     if profile.status != ResidentStatus.APPROVED:
         raise ValidationError({"status": "Only approved residents can be suspended."})
