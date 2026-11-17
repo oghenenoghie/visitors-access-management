@@ -1,6 +1,5 @@
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -13,12 +12,15 @@ from .assignment_serializers import (
     ResidentUnitAssignmentSerializer,
 )
 from .assignment_services import create_assignment, end_assignment
-from .assignments import ResidentUnitAssignment
+from .models import ResidentUnitAssignment
 from .permissions import CanManageResidents
 
 
 class ResidentUnitAssignmentViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
 ):
     queryset = ResidentUnitAssignment.objects.none()
     filterset_fields = ["resident", "unit", "status", "relationship", "is_primary"]
@@ -52,6 +54,14 @@ class ResidentUnitAssignmentViewSet(
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
+        if not has_estate_role(
+            request.user,
+            [EstateRole.ESTATE_ADMIN],
+            estate_id=data["resident"].estate_id,
+        ):
+            from rest_framework.exceptions import NotFound
+
+            raise NotFound()
         assignment = create_assignment(
             **data,
             actor=request.user,
