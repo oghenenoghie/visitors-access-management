@@ -15,7 +15,7 @@ from .models import (
 
 @transaction.atomic
 def create_assignment(
-    *, resident, unit, relationship, is_primary, starts_on, ends_on, actor, request
+    *, resident, unit, relationship, is_primary, starts_on, ends_on=None, actor, request
 ):
     resident = (
         ResidentProfile.objects.select_for_update()
