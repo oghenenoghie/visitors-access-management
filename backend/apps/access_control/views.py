@@ -168,12 +168,7 @@ class GateCheckOutView(APIView):
             pk=serializer.validated_data["invitation"],
             estate=gate.estate,
         )
-        event = check_out(
-            invitation=invitation,
-            gate=gate,
-            actor=request.user,
-            request=request,
-        )
+        event = check_out(invitation=invitation, gate=gate, actor=request.user, request=request)
         return Response(AccessEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
 
