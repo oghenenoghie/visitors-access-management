@@ -38,7 +38,13 @@ class ResidentIdentityDocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResidentIdentityDocument
         fields = [
-            "id", "document_type", "status", "original_filename", "content_type",
-            "size_bytes", "sha256", "created_at",
+            "id",
+            "document_type",
+            "status",
+            "original_filename",
+            "content_type",
+            "size_bytes",
+            "sha256",
+            "created_at",
         ]
         read_only_fields = fields
