@@ -143,7 +143,9 @@ class ImmutableAccessEventError(Exception):
 
 
 class AccessEvent(BaseModel):
-    estate = models.ForeignKey("estates.Estate", on_delete=models.PROTECT, related_name="access_events")
+    estate = models.ForeignKey(
+        "estates.Estate", on_delete=models.PROTECT, related_name="access_events"
+    )
     invitation = models.ForeignKey(
         VisitorInvitation, null=True, blank=True, on_delete=models.PROTECT, related_name="events"
     )
@@ -168,7 +170,9 @@ class AccessEvent(BaseModel):
         ordering = ["-occurred_at"]
         indexes = [
             models.Index(fields=["estate", "-occurred_at"], name="access_event_est_time"),
-            models.Index(fields=["invitation", "event_type", "status"], name="access_event_inv_type"),
+            models.Index(
+                fields=["invitation", "event_type", "status"], name="access_event_inv_type"
+            ),
         ]
         constraints = [
             models.CheckConstraint(
