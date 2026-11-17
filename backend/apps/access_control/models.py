@@ -152,9 +152,7 @@ class AccessEvent(BaseModel):
     credential = models.ForeignKey(
         AccessCredential, null=True, blank=True, on_delete=models.PROTECT, related_name="events"
     )
-    gate_device = models.ForeignKey(
-        GateDevice, on_delete=models.PROTECT, related_name="events"
-    )
+    gate_device = models.ForeignKey(GateDevice, on_delete=models.PROTECT, related_name="events")
     officer = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="access_events"
     )
