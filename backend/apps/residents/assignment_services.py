@@ -3,7 +3,7 @@ from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 
 from apps.audit_logs.services import record
-from apps.properties.models import ResidentialUnit, PropertyStatus
+from apps.properties.models import PropertyStatus, ResidentialUnit
 
 from .models import (
     AssignmentStatus,
