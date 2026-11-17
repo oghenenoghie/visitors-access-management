@@ -7,13 +7,7 @@ from .models import Property, ResidentialUnit
 
 class PropertySerializer(serializers.ModelSerializer):
     estate_id = serializers.PrimaryKeyRelatedField(source="estate", queryset=Estate.objects.all())
-    parent_id = serializers.PrimaryKeyRelatedField(
-        source="parent",
-        queryset=Property.objects.all(),
-        allow_null=True,
-        required=False,
-        default=None,
-    )
+    parent_id = serializers.UUIDField(required=False, allow_null=True)
 
     class Meta:
         model = Property
@@ -31,6 +25,13 @@ class PropertySerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate(self, attrs):
+        if "parent_id" in attrs:
+            parent_id = attrs.pop("parent_id")
+            parent = Property.objects.filter(pk=parent_id).first() if parent_id else None
+            if parent_id and parent is None:
+                raise serializers.ValidationError({"parent_id": "The parent property does not exist."})
+            attrs["parent"] = parent
+
         estate = attrs.get("estate", getattr(self.instance, "estate", None))
         parent = attrs.get("parent", getattr(self.instance, "parent", None))
         if self.instance and estate and estate.pk != self.instance.estate_id:
