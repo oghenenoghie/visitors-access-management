@@ -19,7 +19,9 @@ class InvitationCreateSerializer(serializers.Serializer):
         if attrs["valid_until"] <= attrs["valid_from"]:
             raise serializers.ValidationError({"valid_until": "Must be later than valid_from."})
         if attrs["access_type"] == "single_use" and attrs.get("max_uses", 1) != 1:
-            raise serializers.ValidationError({"max_uses": "Single-use invitations always allow one use."})
+            raise serializers.ValidationError(
+                {"max_uses": "Single-use invitations always allow one use."}
+            )
         return attrs
 
 
