@@ -100,3 +100,36 @@ def test_identity_document_rejects_mismatched_file_signature(api_client, make_es
 
     assert response.status_code == 400
     assert not ResidentProfile.objects.filter(user__email="bad.document@example.com").exists()
+
+
+
+def test_estate_manager_cannot_view_resident_identity_documents(
+    api_client, auth, make_estate, make_member
+):
+    from apps.estates.models import EstateRole
+
+    estate = make_estate()
+    manager = make_member(estate, EstateRole.ESTATE_MANAGER)
+    upload = SimpleUploadedFile(
+        "identity.pdf", b"%PDF-1.7\nprivate data", content_type="application/pdf"
+    )
+    response = api_client.post(
+        REGISTER,
+        {
+            "estate_code": estate.estate_code,
+            "email": "manager.document@example.com",
+            "password": "A-strong-resident-passw0rd!",
+            "first_name": "Private",
+            "last_name": "Document",
+            "identity_document_type": "passport",
+            "identity_document": upload,
+        },
+        format="multipart",
+    )
+    assert response.status_code == 201
+    profile = ResidentProfile.objects.get(user__email="manager.document@example.com")
+    auth(manager)
+
+    denied = api_client.get(f"{RESIDENTS}{profile.pk}/documents/")
+
+    assert denied.status_code == 403
