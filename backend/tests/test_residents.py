@@ -59,7 +59,9 @@ def test_estate_admin_can_approve_pending_resident(
     profile = ResidentProfile.objects.get(user__email="new.resident@example.com")
     auth(admin)
 
-    response = api_client.post(f"{RESIDENTS}{profile.pk}/approve/", {"note": "Verified"}, format="json")
+    response = api_client.post(
+        f"{RESIDENTS}{profile.pk}/approve/", {"note": "Verified"}, format="json"
+    )
 
     assert response.status_code == 200
     profile.refresh_from_db()
