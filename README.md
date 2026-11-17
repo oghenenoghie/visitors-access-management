@@ -9,7 +9,7 @@ Estate platform connecting residents, security officers and administrators:
 
 ## Status
 
-Architecture approved. M1 (foundation) done in `backend/`: Django project, custom user, estates and memberships, estate scoping, error envelope, health endpoint, Docker Compose, CI. Next: M2 (authentication and roles).
+Architecture approved. M1 (foundation) and M2 (authentication and roles) are complete on `main`. M3 (residents and properties) is in progress on `feat/m3-residents-properties`: the first property/unit API slice and database migration are implemented; resident registration, approval, assignments, encrypted document storage and bulk import remain.
 
 ## Documentation
 
