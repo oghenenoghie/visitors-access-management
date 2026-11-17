@@ -3,7 +3,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from apps.audit_logs.services import record
-from apps.common.permissions import IsPlatformAdmin, has_estate_role
+from apps.common.permissions import has_estate_role
 from apps.estates.models import EstateRole
 
 from .models import Property, ResidentialUnit
