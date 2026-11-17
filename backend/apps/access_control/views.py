@@ -3,6 +3,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 
 from apps.common.permissions import has_estate_role
 from apps.estates.models import EstateRole
@@ -15,6 +16,7 @@ from .serializers import (
     GateCheckOutSerializer,
     GateOverrideSerializer,
     GateVerifySerializer,
+    GateVerifyResponseSerializer,
     InvitationCreateSerializer,
     VisitorInvitationSerializer,
 )
@@ -89,6 +91,7 @@ class InvitationDetailView(generics.RetrieveAPIView):
 class InvitationCancelView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=None, responses={200: VisitorInvitationSerializer})
     def post(self, request, pk):
         invitation = get_object_or_404(VisitorInvitation.objects.for_user(request.user), pk=pk)
         if invitation.created_by_id != request.user.pk and not has_estate_role(
@@ -106,6 +109,7 @@ class GateVerifyView(APIView):
     throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
+    @extend_schema(request=GateVerifySerializer, responses={200: GateVerifyResponseSerializer})
     def post(self, request):
         serializer = GateVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -124,6 +128,7 @@ class GateCheckInView(APIView):
     throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
+    @extend_schema(request=GateCheckInSerializer, responses={201: AccessEventSerializer})
     def post(self, request):
         serializer = GateCheckInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -141,6 +146,7 @@ class GateCheckInView(APIView):
 class GateCheckOutView(APIView):
     permission_classes = [IsAuthenticated, GateRolePermission]
 
+    @extend_schema(request=GateCheckOutSerializer, responses={201: AccessEventSerializer})
     def post(self, request):
         serializer = GateCheckOutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -162,6 +168,7 @@ class GateCheckOutView(APIView):
 class GateOverrideView(APIView):
     permission_classes = [IsAuthenticated, CanOverrideAccess]
 
+    @extend_schema(request=GateOverrideSerializer, responses={201: AccessEventSerializer})
     def post(self, request):
         serializer = GateOverrideSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
