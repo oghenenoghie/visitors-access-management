@@ -9,7 +9,7 @@ Estate platform connecting residents, security officers and administrators:
 
 ## Status
 
-Architecture approved. M1 (foundation) and M2 (authentication and roles) are complete on `main`. M3 (residents and properties) is implemented on `feat/m3-residents-properties-ci`: property/unit APIs, resident approval, resident-unit assignments, encrypted identity documents and dry-run/atomic CSV imports. CI is green (130 tests). Production private-storage configuration remains a deployment decision.
+Architecture approved. M1 (foundation), M2 (authentication and roles) and M3 (residents and properties) are merged to `main`. M4 (access engine) is in progress on `feat/m4-access-engine`: resident-authorised invitations, hashed QR/manual credentials, gate verification, transactional check-in/out, supervisor override and append-only access events. See [M4 implementation notes](documentation/implementation/m4-access-engine.md).
 
 ## Documentation
 
