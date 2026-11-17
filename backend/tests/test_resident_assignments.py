@@ -170,3 +170,20 @@ def test_admin_can_end_assignment_and_reassign_unit(
         format="json",
     )
     assert next_assignment.status_code == 201
+
+
+
+def test_estate_admin_cannot_assign_another_estates_resident(
+    api_client, auth, make_estate, make_member
+):
+    own, other = make_estate(), make_estate()
+    admin = make_member(own, EstateRole.ESTATE_ADMIN)
+    profile = approved_profile(api_client, other, make_member(other, EstateRole.ESTATE_ADMIN))
+    unit = make_unit(other)
+    auth(admin)
+
+    response = api_client.post(
+        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
+    )
+
+    assert response.status_code == 404
