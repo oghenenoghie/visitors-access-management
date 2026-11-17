@@ -69,9 +69,7 @@ def test_pending_resident_cannot_be_assigned(api_client, auth, make_estate, make
     unit = make_unit(estate)
     auth(admin)
 
-    response = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
-    )
+    response = api_client.post(ASSIGNMENTS, assignment_payload(profile, unit), format="json")
 
     assert response.status_code == 400
 
@@ -114,9 +112,7 @@ def test_resident_can_only_list_own_assignments(api_client, auth, make_estate, m
     profile = approved_profile(api_client, estate, admin)
     unit = make_unit(estate)
     auth(admin)
-    created = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
-    )
+    created = api_client.post(ASSIGNMENTS, assignment_payload(profile, unit), format="json")
     assert created.status_code == 201
     auth(profile.user)
 
@@ -131,9 +127,7 @@ def test_admin_can_end_assignment_and_reassign_unit(api_client, auth, make_estat
     profile = approved_profile(api_client, estate, admin)
     unit = make_unit(estate)
     auth(admin)
-    created = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
-    )
+    created = api_client.post(ASSIGNMENTS, assignment_payload(profile, unit), format="json")
     assignment_id = created.json()["id"]
 
     ended = api_client.post(
@@ -153,7 +147,6 @@ def test_admin_can_end_assignment_and_reassign_unit(api_client, auth, make_estat
     assert next_assignment.status_code == 201
 
 
-
 def test_estate_admin_cannot_assign_another_estates_resident(
     api_client, auth, make_estate, make_member
 ):
@@ -163,12 +156,9 @@ def test_estate_admin_cannot_assign_another_estates_resident(
     unit = make_unit(other)
     auth(admin)
 
-    response = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
-    )
+    response = api_client.post(ASSIGNMENTS, assignment_payload(profile, unit), format="json")
 
     assert response.status_code == 400
-
 
 
 def test_non_overlapping_primary_assignment_periods_are_allowed(
