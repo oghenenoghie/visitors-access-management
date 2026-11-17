@@ -6,9 +6,7 @@ from .models import Property, ResidentialUnit
 
 
 class PropertySerializer(serializers.ModelSerializer):
-    estate_id = serializers.PrimaryKeyRelatedField(
-        source="estate", queryset=Estate.objects.all()
-    )
+    estate_id = serializers.PrimaryKeyRelatedField(source="estate", queryset=Estate.objects.all())
     parent_id = serializers.PrimaryKeyRelatedField(
         source="parent", queryset=Property.objects.all(), allow_null=True, required=False
     )
@@ -16,8 +14,15 @@ class PropertySerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = [
-            "id", "estate_id", "parent_id", "name", "property_type", "description", "status",
-            "created_at", "updated_at",
+            "id",
+            "estate_id",
+            "parent_id",
+            "name",
+            "property_type",
+            "description",
+            "status",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -53,7 +58,14 @@ class ResidentialUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResidentialUnit
         fields = [
-            "id", "estate_id", "property_id", "unit_number", "floor", "block", "status",
-            "created_at", "updated_at",
+            "id",
+            "estate_id",
+            "property_id",
+            "unit_number",
+            "floor",
+            "block",
+            "status",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "estate_id", "created_at", "updated_at"]
