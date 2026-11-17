@@ -25,13 +25,9 @@ class BulkImportView(APIView):
         serializer = BulkImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         estate_id = serializer.validated_data["estate_id"]
-        if not has_estate_role(
-            request.user, [EstateRole.ESTATE_ADMIN], estate_id=estate_id
-        ):
+        if not has_estate_role(request.user, [EstateRole.ESTATE_ADMIN], estate_id=estate_id):
             raise NotFound()
-        estate = get_object_or_404(
-            Estate, pk=estate_id, status=EstateStatus.ACTIVE
-        )
+        estate = get_object_or_404(Estate, pk=estate_id, status=EstateStatus.ACTIVE)
         result = process_bulk_import(
             estate=estate,
             import_type=import_type,
