@@ -6,8 +6,12 @@ from rest_framework.exceptions import ValidationError
 from apps.audit_logs.services import record
 from apps.properties.models import ResidentialUnit, PropertyStatus
 
-from .assignments import AssignmentStatus, ResidentUnitAssignment
-from .models import ResidentProfile, ResidentStatus
+from .models import (
+    AssignmentStatus,
+    ResidentProfile,
+    ResidentStatus,
+    ResidentUnitAssignment,
+)
 
 
 @transaction.atomic
@@ -30,8 +34,9 @@ def create_assignment(
     overlaps = ResidentUnitAssignment.objects.filter(
         resident=resident,
         status=AssignmentStatus.ACTIVE,
-        starts_on__lte=ends_on or timezone.localdate(),
     ).filter(Q(ends_on__isnull=True) | Q(ends_on__gte=starts_on))
+    if ends_on:
+        overlaps = overlaps.filter(starts_on__lte=ends_on)
     if is_primary:
         overlaps = overlaps.filter(is_primary=True)
     if overlaps.exists():
