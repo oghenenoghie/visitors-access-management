@@ -1179,12 +1179,17 @@ GET  /api/v1/auth/me/
 ## Residents
 
 ```text
+POST   /api/v1/residents/register/
 GET    /api/v1/residents/
-POST   /api/v1/residents/
 GET    /api/v1/residents/{id}/
-PATCH  /api/v1/residents/{id}/
 POST   /api/v1/residents/{id}/approve/
+POST   /api/v1/residents/{id}/reject/
 POST   /api/v1/residents/{id}/suspend/
+
+GET    /api/v1/resident-unit-assignments/
+GET    /api/v1/resident-unit-assignments/{id}/
+POST   /api/v1/resident-unit-assignments/
+POST   /api/v1/resident-unit-assignments/{id}/end/
 ```
 
 ## Properties
@@ -1192,10 +1197,10 @@ POST   /api/v1/residents/{id}/suspend/
 ```text
 GET    /api/v1/properties/
 POST   /api/v1/properties/
-GET    /api/v1/units/
-POST   /api/v1/units/
-GET    /api/v1/units/{id}/
-PATCH  /api/v1/units/{id}/
+GET    /api/v1/residential-units/
+POST   /api/v1/residential-units/
+GET    /api/v1/residential-units/{id}/
+PATCH  /api/v1/residential-units/{id}/
 ```
 
 ## Visitors and invitations
