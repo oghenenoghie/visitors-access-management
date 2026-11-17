@@ -23,6 +23,15 @@ class AccessEventAdmin(admin.ModelAdmin):
     list_filter = ("estate", "event_type", "status")
     readonly_fields = [field.name for field in AccessEvent._meta.fields]
 
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 admin.site.register(Visitor)
 admin.site.register(AccessCredential)
