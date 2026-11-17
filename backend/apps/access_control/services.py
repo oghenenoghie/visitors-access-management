@@ -228,11 +228,16 @@ def verify_credential(*, value, gate, actor, request):
 def check_in(*, value, gate, actor, request):
     credential = _lookup_credential(value)
     if credential is None:
-        verify_credential(value=value, gate=gate, actor=actor, request=request)
-        return AccessEvent.objects.filter(
+        event = AccessEvent.objects.create(
             estate=gate.estate, gate_device=gate, officer=actor,
             event_type=AccessEventType.ENTRY, status=AccessEventStatus.REJECTED,
-        ).order_by("-occurred_at").first()
+            occurred_at=timezone.now(), reason="INVALID",
+        )
+        record(
+            action="access.check_in_rejected", actor=actor, estate=gate.estate,
+            new_values={"result": "INVALID", "gate_id": str(gate.pk)}, request=request,
+        )
+        return event
     credential = AccessCredential.objects.select_for_update().select_related(
         "invitation__visitor", "invitation__estate", "invitation__unit"
     ).get(pk=credential.pk)
@@ -249,7 +254,7 @@ def check_in(*, value, gate, actor, request):
     ).exists():
         result = "ALREADY_CHECKED_IN"
     if result != "VALID":
-        AccessEvent.objects.create(
+        event = AccessEvent.objects.create(
             estate=gate.estate, invitation=invitation, credential=credential,
             gate_device=gate, officer=actor, event_type=AccessEventType.ENTRY,
             status=AccessEventStatus.REJECTED, occurred_at=timezone.now(), reason=result,
@@ -259,10 +264,7 @@ def check_in(*, value, gate, actor, request):
             resource=invitation, new_values={"result": result, "gate_id": str(gate.pk)},
             request=request,
         )
-        return AccessEvent.objects.filter(
-            invitation=invitation, gate_device=gate, officer=actor,
-            event_type=AccessEventType.ENTRY, status=AccessEventStatus.REJECTED,
-        ).order_by("-occurred_at").first()
+        return event
     credential.uses_count += 1
     if invitation.access_type == AccessType.SINGLE_USE or credential.uses_count >= invitation.max_uses:
         credential.status = CredentialStatus.CONSUMED
