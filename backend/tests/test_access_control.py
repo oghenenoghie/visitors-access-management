@@ -29,7 +29,6 @@ API = "/api/v1/"
 
 @pytest.fixture
 def access_context(make_estate, make_member):
-    from apps.estates.models import EstateMembership
     from apps.access_control.models import GateDevice
 
     estate = make_estate()
@@ -242,3 +241,68 @@ def test_concurrent_single_use_consumption_only_admits_once(access_context):
         invitation=invitation, status=AccessEventStatus.ACCEPTED,
         event_type=AccessEventType.ENTRY,
     ).count() == 1
+
+
+
+def test_multi_use_invitation_respects_use_limit(access_context):
+    issued = create_pass(access_context, access_type="multi_use", max_uses=2)
+    client = gate_client(access_context["officer"])
+    checkin_payload = {
+        "gate_device": str(access_context["gate"].pk),
+        "credential": issued["access_code"],
+    }
+    for _ in range(2):
+        entry = client.post(API + "gate/check-in/", checkin_payload, format="json")
+        assert entry.status_code == 201
+        assert entry.data["status"] == AccessEventStatus.ACCEPTED
+        exit_response = client.post(
+            API + "gate/check-out/",
+            {
+                "gate_device": str(access_context["gate"].pk),
+                "invitation": issued["invitation"]["id"],
+            },
+            format="json",
+        )
+        assert exit_response.status_code == 201
+
+    third = client.post(API + "gate/check-in/", checkin_payload, format="json")
+    assert third.data["status"] == AccessEventStatus.REJECTED
+    assert third.data["reason"] == "ALREADY_USED"
+
+
+def test_credential_cannot_be_verified_at_another_estate(access_context, make_estate, make_member):
+    from apps.access_control.models import GateDevice
+
+    other_estate = make_estate()
+    other_officer = make_member(other_estate, EstateRole.SECURITY_OFFICER)
+    other_gate = GateDevice.objects.create(
+        estate=other_estate, name="Other Gate", device_identifier=f"gate-{other_estate.pk}"
+    )
+    issued = create_pass(access_context)
+    response = gate_client(other_officer).post(
+        API + "gate/verify/",
+        {"gate_device": str(other_gate.pk), "credential": issued["qr_token"]},
+        format="json",
+    )
+    assert response.status_code == 200
+    assert response.data["result"] == "INVALID"
+    assert response.data["visitor_name"] is None
+
+
+def test_access_event_cannot_be_mutated(access_context):
+    from apps.access_control.models import ImmutableAccessEventError
+
+    issued = create_pass(access_context)
+    client = gate_client(access_context["officer"])
+    response = client.post(
+        API + "gate/check-in/",
+        {
+            "gate_device": str(access_context["gate"].pk),
+            "credential": issued["qr_token"],
+        },
+        format="json",
+    )
+    event = AccessEvent.objects.get(pk=response.data["id"])
+    event.reason = "tampered"
+    with pytest.raises(ImmutableAccessEventError):
+        event.save()
