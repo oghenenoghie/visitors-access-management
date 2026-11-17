@@ -178,7 +178,6 @@ SPECTACULAR_SETTINGS = {
         "InvitationStatusEnum": "apps.access_control.models.InvitationStatus.choices",
         "AccessTypeEnum": "apps.access_control.models.AccessType.choices",
         "CredentialStatusEnum": "apps.access_control.models.CredentialStatus.choices",
-        "GateDeviceStatusEnum": "apps.access_control.models.GateDeviceStatus.choices",
         "AccessEventTypeEnum": "apps.access_control.models.AccessEventType.choices",
         "AccessEventStatusEnum": "apps.access_control.models.AccessEventStatus.choices",
     },
