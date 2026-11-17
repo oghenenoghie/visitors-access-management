@@ -14,9 +14,11 @@ Per the master skill, missing rules that affect access security, privacy or data
 | # | Question | Affects | Working default until answered |
 |---|---|---|---|
 | Q4 | First release: one estate or several estates live at once? | Onboarding, super admin UI | Schema multi-estate ready, one estate in use |
-| Q5 | Visitor and access-event retention period | Privacy policy, Play data safety form | Configurable in `EstateSettings`, no automatic purge |
+| Q5 | Visitor and access-event retention period | Privacy policy, Play data safety form | 12 months (proposal), then anonymise visitor data automatically; confirm with the Estate |
 | Q6 | Resident self-registration: how is the estate reference verified (code issued by management, unit number plus phone, other)? | Registration flow | Management-issued estate reference, admin approval required |
-| Q7 | Which provider sends activation and password-reset messages (email, SMS, both)? | Auth, cost | Email first |
-| Q8 | Hosting and accounts (backend, Postgres, Vercel, Firebase, Play Console) | Phase 10, CI | Proposed in `system-architecture.md` |
+| Q7 | Which SMS provider for OTP and alerts? (proposal: SMS gateway, Estate-paid) | Auth, cost | SMS OTP primary, provider chosen in discovery |
+| Q8 | Which cloud (AWS, Azure or GCP) in the Estate's account, plus Firebase and Play Console accounts | Phase 10, CI, Terraform | Docker plus Terraform, provider TBD |
+| Q12 | Proposal says visitors give only name and phone, but the master skill adds optional vehicle registration and notes. Keep them? | Privacy notice, data minimisation | Keep vehicle registration optional; drop free-text notes unless needed |
+| Q13 | Stack: proposal says Flutter and NestJS; master skill says Expo and Django | Everything | Blocking; see `proposal-reconciliation.md` C1 |
 | Q9 | Estate branding and logo, or use the default tokens for now? | Design system | Default navy/blue tokens |
 | Q10 | Figma file for the designs, or design from scratch with the design skill? | Phase 3 | Design from scratch |

@@ -14,6 +14,7 @@ Phase 1-2 (discovery, architecture, database and API design). No application cod
 ## Documentation
 
 - [Project assessment](documentation/requirements/00-project-assessment.md)
+- [Proposal reconciliation](documentation/requirements/proposal-reconciliation.md)
 - [Open questions](documentation/requirements/open-questions.md)
 - [System architecture](documentation/architecture/system-architecture.md)
 - [Database design and ERD](documentation/database/erd.md)

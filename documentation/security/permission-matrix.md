@@ -24,11 +24,15 @@ Legend: ✅ allowed · 🔒 own records only · 🏢 within assigned estate · �
 | Review incidents | ✅ | 🏢 | 🏢 | ❌ | ❌ | 🏢 | own reports |
 | Gate monitoring and rejected attempts | ✅ | 🏢 | 🏢 | ❌ | ❌ | 🏢 | own gate, own events |
 | Reports and exports | ✅ | 🏢 | 🏢 | ❌ | ❌ | 🏢 gate reports | ❌ |
+| View resident ID document (each view audited) | ✅ | ✅ authorised only | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Audit logs (read-only) | ✅ | 🏢 | ⚙️ | ❌ | ❌ | ❌ | ❌ |
 | Edit or delete audit logs | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Notifications | — | 🏢 | 🏢 | 🔒 | 🔒 | 🔒 | 🔒 |
 
 ## Rules
+
+- Dashboard accounts (all management roles) require two-factor authentication.
+- Resident ID documents open only through short-lived access by authorised administrators; each view is written to the audit log.
 
 - The mobile resident app exposes no administrative functions; the security app exposes no resident management.
 - Estate Manager capabilities marked ⚙️ are granted per estate by an Estate Administrator; the default is read-only monitoring.

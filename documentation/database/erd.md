@@ -123,6 +123,8 @@ Remaining entities (`Property`, `ResidentialUnit`, `ResidentUnitAssignment`, `Ga
 | `Visitor.estate_id`, `Visitor.created_by_resident_id` | Prevents one resident reaching another's visitor records. |
 | `AccessCredential.estate_id` | Estate-scoped credential lookup at the gate. |
 | `AccessEvent.entry_event_id` (self FK, EXIT only) | Links an exit to its original entry. |
+| `ResidentIdDocument` (resident_profile, storage_key, encrypted, uploaded_at, deleted_at) | Proposal requires encrypted ID upload; every admin view is an `AuditLog` entry; deleted on account closure. |
+| `Property` street level (`street` field or street property type) | Proposal manages streets, blocks and units. |
 | `Incident` (estate, reported_by, gate_device, severity, description, status, created_at) | Needed by the gate incident API and the dashboard Incidents module. |
 | `DeviceRegistration` (user, platform, push_token, last_seen_at, is_active) | FCM tokens, invalid-token handling. |
 | `AuditLog` extras: `object_label` optional | Readable audit entries without joins. Low priority. |
@@ -140,6 +142,7 @@ Remaining entities (`Property`, `ResidentialUnit`, `ResidentUnitAssignment`, `Ga
 
 - `AuditLog`, `AccessEvent` and invitations are preserved; retention follows `EstateSettings` and an approved process. No hard deletes on these.
 - Soft deletion only for users and residential records where history must be kept.
-- `identification_reference` stays minimal and is encrypted at rest if it must be kept at all.
+- `identification_reference` stays minimal. The ID document itself lives in private object storage, encrypted per file, never in the database, and is deleted when the account closes.
+- Retention (proposal: 12 months by default, Estate-configurable): visitor personal data is anonymised automatically after the period; `AccessEvent` rows and `AuditLog` are kept.
 - Status fields are enums with database check constraints. All timestamps are `timestamptz`, displayed in the estate timezone.
 - State changes that must be atomic (credential consumption, check-in, approval) happen inside `transaction.atomic()` in the service layer.
