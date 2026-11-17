@@ -12,8 +12,5 @@ class CanManageProperties(BasePermission):
         return bool(
             user
             and user.is_authenticated
-            and (
-                user.is_platform_admin
-                or has_estate_role(user, [EstateRole.ESTATE_ADMIN])
-            )
+            and (user.is_platform_admin or has_estate_role(user, [EstateRole.ESTATE_ADMIN]))
         )
