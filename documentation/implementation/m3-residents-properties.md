@@ -55,7 +55,7 @@ API routes:
 - Residents can read only their own assignments while their resident profile is approved.
 - Overlapping active assignments for the same resident/unit are rejected.
 - Overlapping primary assignments for the same resident are rejected.
-- Database constraint prevents more than one active primary assignment.
+- Transactional overlap validation (with a resident-row lock) prevents overlapping primary assignment periods; a database check constraint enforces valid start/end dates.
 - Assignment creation and ending are audited; deletion is not exposed.
 
 API routes:
