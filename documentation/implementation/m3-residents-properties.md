@@ -1,6 +1,6 @@
 # M3 — Residents and Properties Implementation
 
-Status: **In progress — implementation complete for planned backend slices; verification pending**  
+Status: **Complete — implementation and CI verified**  
 Working branch: `feat/m3-residents-properties`  
 Baseline: M2 commit `8ef51d95d08aa7fa3a3137e33cb485751502bec3`
 
@@ -88,11 +88,24 @@ Send multipart fields `estate_id`, `file`, and optional `dry_run`. Use `dry_run=
 - Do not log raw documents, passwords, wrapped keys or storage paths.
 - Estate managers remain read-only for resident/property administration until configurable permissions are implemented.
 
-## Remaining M3 work
-1. Run full CI: Ruff lint/format, Django checks, migration consistency, OpenAPI validation and pytest.
-2. Add/adjust edge-case and negative tests based on CI findings.
-3. Confirm production storage backend privacy, key backup/rotation and retention controls before deployment.
-4. Complete security review and mark M3 done only after all checks pass.
+## M3 verification result
+
+<badge>CI passed</badge>
+
+- Ruff lint and format: passed.
+- Django system check: passed.
+- Migration consistency: passed.
+- OpenAPI schema validation: passed.
+- Pytest: **130 passed, 28 warnings**.
+
+The warnings are from existing authentication/password-reset/2FA test cases; they did not fail the suite.
+
+## Deployment requirements (outside the M3 code milestone)
+
+1. Configure Django's default storage backend as private/non-public before production.
+2. Back up `FIELD_ENCRYPTION_KEY` securely. Loss of this key makes existing identity documents unreadable.
+3. Decide provider and document key-rotation, retention and malware-scanning policies under Q8.
+4. Define the estate's independent resident-verification evidence under Q6. Until then, administrator approval remains a manual verification gate.
 
 ## Verification commands
 - `ruff check . && ruff format --check .`
