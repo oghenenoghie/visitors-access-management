@@ -254,7 +254,6 @@ def test_concurrent_single_use_consumption_only_admits_once(access_context):
     )
 
 
-
 def test_multi_use_invitation_respects_use_limit(access_context):
     issued = create_pass(access_context, access_type="multi_use", max_uses=2)
     client = gate_client(access_context["officer"])
