@@ -329,11 +329,18 @@ def manual_override(*, invitation, gate, actor, reason, request):
         status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
     ).exclude(pk__in=exited_ids).exists():
         raise ValidationError({"invitation": "This visitor is already checked in."})
+    credential = AccessCredential.objects.select_for_update().filter(
+        invitation=invitation
+    ).first()
+    if credential:
+        credential.uses_count = min(invitation.max_uses, credential.uses_count + 1)
+        credential.status = CredentialStatus.CONSUMED
+        credential.save(update_fields=["uses_count", "status", "updated_at"])
     event = AccessEvent.objects.create(
         estate=gate.estate, invitation=invitation,
-        gate_device=gate, officer=actor, event_type=AccessEventType.ENTRY,
-        status=AccessEventStatus.OVERRIDDEN, occurred_at=timezone.now(),
-        reason=reason.strip()[:500],
+        credential=credential, gate_device=gate, officer=actor,
+        event_type=AccessEventType.ENTRY, status=AccessEventStatus.OVERRIDDEN,
+        occurred_at=timezone.now(), reason=reason.strip()[:500],
     )
     record(
         action="access.manual_override", actor=actor, estate=gate.estate,
