@@ -1,6 +1,7 @@
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from apps.common.permissions import administered_estate_ids, has_estate_role
@@ -59,8 +60,6 @@ class ResidentUnitAssignmentViewSet(
             [EstateRole.ESTATE_ADMIN],
             estate_id=data["resident"].estate_id,
         ):
-            from rest_framework.exceptions import NotFound
-
             raise NotFound()
         assignment = create_assignment(
             **data,
