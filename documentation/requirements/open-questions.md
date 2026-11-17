@@ -7,7 +7,9 @@
 - **Q3** Offline gate: fail closed; manual process, logged as an override afterwards.
 - **Q11** Re-opening a pass: cached in SecureStore on the device; reissue revokes the old credential and creates a new one.
 
-## Still open (blocking approval)
+- **Q13** Stack: Django backend, Flutter mobile apps, Next.js dashboard. The proposal's NestJS backend is replaced by Django, so proposal section 4.1 must be corrected before the client signs.
+
+## Still open
 
 Per the master skill, missing rules that affect access security, privacy or data integrity are decided by the project owner, not assumed.
 
@@ -19,6 +21,5 @@ Per the master skill, missing rules that affect access security, privacy or data
 | Q7 | Which SMS provider for OTP and alerts? (proposal: SMS gateway, Estate-paid) | Auth, cost | SMS OTP primary, provider chosen in discovery |
 | Q8 | Which cloud (AWS, Azure or GCP) in the Estate's account, plus Firebase and Play Console accounts | Phase 10, CI, Terraform | Docker plus Terraform, provider TBD |
 | Q12 | Proposal says visitors give only name and phone, but the master skill adds optional vehicle registration and notes. Keep them? | Privacy notice, data minimisation | Keep vehicle registration optional; drop free-text notes unless needed |
-| Q13 | Stack: proposal says Flutter and NestJS; master skill says Expo and Django | Everything | Blocking; see `proposal-reconciliation.md` C1 |
 | Q9 | Estate branding and logo, or use the default tokens for now? | Design system | Default navy/blue tokens |
 | Q10 | Figma file for the designs, or design from scratch with the design skill? | Phase 3 | Design from scratch |

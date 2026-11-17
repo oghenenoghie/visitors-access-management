@@ -1,6 +1,6 @@
 ---
 name: estate-mobile-engineer
-description: Develop the resident and security Android applications for the Estate Visitor Access Management Platform using React Native, Expo and TypeScript. Use for mobile architecture, screens, navigation, API integration, QR scanning, secure storage, notifications, accessibility and Android releases.
+description: Develop the resident and security Android applications for the Estate Visitor Access Management Platform using Flutter and Dart. Use for mobile architecture, screens, navigation, API integration, QR scanning, secure storage, notifications, accessibility and Android releases.
 ---
 
 # Estate Mobile Engineer Skill
@@ -13,46 +13,44 @@ Build two dependable Android experiences:
 Both apps use the same documented backend APIs. They may share code, theme tokens and components, but must retain separate navigation, permissions and user experiences.
 
 ## Required stack
-- React Native
-- Expo and Expo Router
-- TypeScript with strict checking where practical
-- TanStack Query for server state
-- Zustand only for appropriate client state
-- React Hook Form and Zod
-- Expo Camera or an approved QR scanning library
-- Expo SecureStore for sensitive tokens
-- Expo Notifications / Firebase Cloud Messaging
-- Native share sheet for WhatsApp, SMS and other installed apps
+- Flutter (stable) and Dart, with strict analysis options (`flutter analyze` clean)
+- go_router for navigation
+- Riverpod for state, with server data loaded through providers (no duplicate copies of backend-owned records)
+- dio with a client generated from the backend OpenAPI schema; freezed and json_serializable for models
+- mobile_scanner for QR scanning, qr_flutter for QR display
+- flutter_secure_storage for sensitive tokens (Android Keystore)
+- firebase_messaging / Firebase Cloud Messaging
+- share_plus for the native share sheet (WhatsApp, SMS and other installed apps)
 
-Inspect the existing app and Expo SDK before adding or upgrading packages.
+Inspect the existing app and Flutter SDK version before adding or upgrading packages.
 
 ## Repository and app structure
 Prefer a workspace/monorepo only if it is already established or clearly beneficial. A possible structure:
 
 ```text
 mobile/
-  packages/
-    api/
+  packages/            # Dart packages in a pub workspace
+    api/               # generated OpenAPI client and models
     shared/
     components/
     theme/
-  resident-app/
-  security-app/
+  resident_app/
+  security_app/
 ```
 
 Keep API clients, types and genuinely shared components centralised. Do not force the two apps to share screens or navigation that should differ.
 
 ## Shared engineering rules
-- Use TypeScript types for API contracts.
+- Use generated Dart types for API contracts.
 - Keep API calls out of presentation components.
 - Use a shared, configured API client with token refresh handling.
 - Handle expired sessions and revoked accounts centrally.
-- Use server state for backend-owned records.
-- Do not duplicate server data in Zustand without a clear reason.
+- Treat backend-owned records as server state (Riverpod async providers).
+- Do not duplicate server data in local state without a clear reason.
 - Validate forms on the client for usability and again on the backend for security.
 - Include loading, empty, error, offline and success states.
 - Do not hardcode production endpoints or secrets.
-- Never store passwords or raw long-lived secrets in ordinary AsyncStorage.
+- Never store passwords or raw long-lived secrets in shared preferences or plain files.
 - Do not log access credentials, tokens or visitor PII.
 
 ## Resident app requirements

@@ -14,18 +14,17 @@ If this file and the master skill disagree, the master skill wins. Missing requi
 ## Stack
 
 - Backend: Python, Django, Django REST Framework, PostgreSQL, Simple JWT.
-- Mobile (resident and security apps): Expo React Native, TypeScript (strict), Expo Router, TanStack Query, Zustand, React Hook Form, Zod, Expo Camera, Expo Notifications, Expo SecureStore.
-- Mobile UI: NativeWind, React Native Reusables, Lucide React Native, React Native Reanimated.
+- Mobile (resident and security apps): Flutter and Dart (Android first), go_router, Riverpod, dio with an OpenAPI-generated client, mobile_scanner, qr_flutter, firebase_messaging, flutter_secure_storage. Decision 2026-11-17, following the client proposal.
 - Admin dashboard: Next.js, TypeScript, Tailwind CSS, shadcn/ui.
-- Package manager for Node workspaces: pnpm (Expo needs `node-linker=hoisted`).
+- Package manager for the Node dashboard: pnpm.
 
 ## Repository layout
 
-Follow the master skill's monorepo layout: `backend/`, `mobile/` (`resident-app/`, `security-app/`, shared `packages/`), `admin-dashboard/`, `documentation/`, `infrastructure/`. Inside each mobile app use Expo Router route groups, `components/`, `hooks/`, `services/` (API clients), `types/`, `constants/` (theme tokens). Shared code goes in `mobile/packages/`, not copied between apps.
+Follow the master skill's monorepo layout: `backend/`, `mobile/` (`resident_app/`, `security_app/`, shared Dart `packages/`), `admin-dashboard/`, `documentation/`, `infrastructure/`. Shared code (API client, theme tokens, common widgets) goes in `mobile/packages/`, not copied between apps. Keep screens, state and API access in separate layers.
 
 ## Design direction
 
-Premium, modern, enterprise-grade. Use the master skill's design tokens (deep navy `#142B45`, primary blue `#2563EB`, soft grey background `#F7F9FC`), Inter typography, 16–20px rounded cards, subtle shadows, light and dark themes.
+Premium, modern, enterprise-grade. Use the master skill's design tokens (deep navy `#142B45`, primary blue `#2563EB`, soft grey background `#F7F9FC`), Inter typography, 16–20px rounded cards, subtle shadows, light and dark themes, restrained motion.
 
 Avoid generic template looks, excessive gradients, oversized decoration, inconsistent spacing and unnecessary animation.
 
@@ -39,7 +38,7 @@ Avoid generic template looks, excessive gradients, oversized decoration, inconsi
 
 ## Architecture rules
 
-- TypeScript throughout; reusable components; screens separate from business logic.
+- Strict typing (Dart analysis, TypeScript strict on the dashboard); reusable components; screens separate from business logic.
 - API services in a dedicated directory, typed responses, centralised auth.
 - Role-based navigation; resident and security permissions stay separate. No admin functions in the resident app.
 - Never put secrets in frontend code.
@@ -47,10 +46,10 @@ Avoid generic template looks, excessive gradients, oversized decoration, inconsi
 
 ## Workflow
 
-Before a feature: inspect the structure, review the design system, reuse existing components, check the relevant Expo docs (Expo MCP), then implement. After: test on Android (primary) and iOS compatibility, check loading/empty/error/success states, report files created or changed.
+Before a feature: inspect the structure, review the design system, reuse existing components, check the relevant Flutter and package docs, then implement. After: test on Android (primary) and iOS compatibility, check loading/empty/error/success states, report files created or changed.
 
 Do not rewrite working functionality without a clear reason. Do not claim a Figma design was imported unless it was.
 
 ## MCP servers
 
-`.mcp.json` configures Figma and Expo. Run `/mcp` in Claude Code to authenticate both. A custom Estate MCP server is deferred until backend auth and permissions exist.
+`.mcp.json` configures Figma. Run `/mcp` in Claude Code to authenticate it. A custom Estate MCP server is deferred until backend auth and permissions exist.

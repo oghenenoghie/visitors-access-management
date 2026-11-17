@@ -2,8 +2,8 @@
 
 Estate platform connecting residents, security officers and administrators:
 
-- **Resident app** (Android, Expo): create visitor invitations, QR passes, history.
-- **Security app** (Android, Expo): scan or enter codes, verify, record entry and exit.
+- **Resident app** (Android, Flutter): create visitor invitations, QR passes, history.
+- **Security app** (Android, Flutter): scan or enter codes, verify, record entry and exit.
 - **Admin dashboard** (Next.js): residents, units, gate monitoring, reports, audit logs.
 - **Backend** (Django REST, PostgreSQL): single source of truth for auth, permissions and access decisions.
 
@@ -24,4 +24,4 @@ Phase 1-2 (discovery, architecture, database and API design). No application cod
 
 ## AI agent setup
 
-Project instructions are in `CLAUDE.md`. Skills are in `.agents/skills/`; `estate-access-platform` is the source of truth and the six specialist skills supplement it. `.mcp.json` configures the Figma and Expo MCP servers.
+Project instructions are in `CLAUDE.md`. Skills are in `.agents/skills/`; `estate-access-platform` is the source of truth and the six specialist skills supplement it. `.mcp.json` configures the Figma MCP server.

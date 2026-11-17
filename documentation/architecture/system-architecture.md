@@ -7,8 +7,8 @@ Status: draft for approval. Where this document extends the master skill it is m
 ```mermaid
 flowchart LR
   subgraph Clients
-    R[Resident app<br/>Expo / RN]
-    S[Security app<br/>Expo / RN]
+    R[Resident app<br/>Flutter]
+    S[Security app<br/>Flutter]
     A[Admin dashboard<br/>Next.js]
   end
   API[Django REST API<br/>/api/v1/]
@@ -53,7 +53,7 @@ Apps follow the master skill: authentication, users, estates, properties, reside
 - **Storage**: only `HMAC-SHA256(server_pepper, token)` is stored, never the token. HMAC (not bcrypt) is used because lookup is by value and the QR token is high entropy. The pepper lives in environment configuration and is rotatable.
 - **Scoping**: lookup is always `(estate_id, token_hash)`. `estate_id` comes from the officer's active shift, not from the request body. A partial unique index on `(estate_id, token_hash)` for active credentials detects collisions.
 - **Guessing defence for numeric codes**: rate limit per device and per officer, lockout after repeated failures, every failure written to `AccessEvent` as `REJECTED_ENTRY`, short validity windows.
-- Because only the hash is stored, the server cannot re-display an existing pass. The plaintext is returned once at generation. How a resident re-opens a pass later is decided (Q11): the app keeps it in SecureStore, and "reissue" revokes the old credential and creates a new one.
+- Because only the hash is stored, the server cannot re-display an existing pass. The plaintext is returned once at generation. How a resident re-opens a pass later is decided (Q11): the app keeps it in secure storage, and "reissue" revokes the old credential and creates a new one.
 
 ## Verification and admission
 
@@ -73,7 +73,7 @@ Fail closed. If the gate app cannot reach the backend it shows an explicit offli
 
 ## Authentication
 
-Passwords hashed with Argon2. Two-factor authentication is required for every dashboard account. Password recovery uses a one-time code by SMS. Users can see sessions and sign out remotely. Simple JWT with short-lived access tokens and rotating refresh tokens, blacklist on logout, suspension and password reset. Tokens in Expo SecureStore on mobile. The dashboard keeps tokens in httpOnly cookies behind its own Next.js route handlers, not in `localStorage`. Gate devices are registered (`GateDevice`), and security logins are bound to an active `SecurityShift` and device. Rate limiting on login, password recovery and verification.
+Passwords hashed with Argon2. Two-factor authentication is required for every dashboard account. Password recovery uses a one-time code by SMS. Users can see sessions and sign out remotely. Simple JWT with short-lived access tokens and rotating refresh tokens, blacklist on logout, suspension and password reset. Tokens in flutter_secure_storage (Android Keystore) on mobile. The dashboard keeps tokens in httpOnly cookies behind its own Next.js route handlers, not in `localStorage`. Gate devices are registered (`GateDevice`), and security logins are bound to an active `SecurityShift` and device. Rate limiting on login, password recovery and verification.
 
 ## Notifications
 
@@ -97,7 +97,7 @@ The proposal commits to the Estate's own cloud account (AWS, Azure or GCP), prov
 | PostgreSQL | Managed Postgres with automated backups and point-in-time recovery |
 | ID documents | Private object storage, per-file encryption with the provider's key service |
 | Admin dashboard | Container or provider-native hosting (Vercel only if the Estate agrees) |
-| Mobile builds | EAS Build to Play Store |
+| Mobile builds | Flutter release builds (Android App Bundle) signed and published to Play Store from CI |
 | CI/CD | GitHub Actions: lint, type-check, tests, migration check, build |
 | Secrets | Environment variables, `.env.example` in each app, never committed |
 | Monitoring | Sentry plus uptime checks; backend latency metrics against the 2 s verify target |

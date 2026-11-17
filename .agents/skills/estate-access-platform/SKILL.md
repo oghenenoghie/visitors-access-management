@@ -98,17 +98,18 @@ Backend responsibilities:
 
 ## 3.2 Resident and Security Mobile Applications
 
-- React Native.
-- Expo.
-- TypeScript.
-- Expo Router.
-- React Query / TanStack Query.
-- Zustand for appropriate client-side state.
-- React Hook Form.
-- Zod validation.
-- Expo Camera for QR scanning.
-- Expo Notifications.
-- Secure token storage using Expo SecureStore.
+Decision 2026-11-17: Flutter, following the client proposal (section 4.1). The backend stays Django and the dashboard stays Next.js.
+
+- Flutter (stable channel) and Dart, Android first.
+- go_router for navigation.
+- Riverpod for state management.
+- dio with a client generated from the backend OpenAPI schema.
+- freezed and json_serializable for typed models.
+- Form validation in Dart, mirrored by backend validation.
+- mobile_scanner for QR scanning; qr_flutter for QR rendering.
+- firebase_messaging for push notifications.
+- flutter_secure_storage for tokens (Android Keystore backed).
+- share_plus for the native share sheet.
 
 Both applications should share reusable components, API services, authentication utilities and design tokens where appropriate.
 

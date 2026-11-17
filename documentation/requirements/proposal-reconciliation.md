@@ -6,7 +6,7 @@ Source: *Estate Gate Access & Visitor Management System* proposal, Aqvessa Techn
 
 | # | Proposal says | Master skill / our docs say | Handling |
 |---|---|---|---|
-| C1 | Mobile: **Flutter**. Backend: **Node.js, NestJS, TypeScript** (section 4.1) | Mobile: **Expo React Native**. Backend: **Django, DRF** | Blocks M1. Asked of the project owner. Docs stay stack-neutral where possible. |
+| C1 | Mobile: **Flutter**. Backend: **Node.js, NestJS, TypeScript** (section 4.1) | Mobile: **Expo React Native**. Backend: **Django, DRF** | **Decided 2026-11-17: Django backend, Flutter apps, Next.js dashboard.** Follows the proposal for mobile and dashboard, not for the backend. Proposal section 4.1 (NestJS) must be corrected before the client signs. |
 | C2 | Hosting in the **Estate's own cloud account** (AWS, Azure or GCP), provisioned with **Terraform**; provider agreed in discovery | Docs proposed Railway and Vercel | Our hosting proposal is withdrawn as a default. Docker stays; add Terraform to infrastructure. Provider agreed with the Estate. |
 | C3 | Resident registration includes **upload of a valid ID**, encrypted per file, viewable only by authorised admins with every view logged, deleted on account closure | `identification_reference` kept minimal, no document storage | Adopt the proposal: add `ResidentIdDocument` and ID-view auditing (see below). |
 | C4 | Visitors provide **only name and telephone number** (data minimisation) | `Visitor` also has `vehicle_registration` and `notes` | Keep vehicle registration optional; decision Q12 on whether the minimisation statement needs an exception. |
