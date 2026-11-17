@@ -14,7 +14,7 @@ from .assignment_serializers import (
     ResidentUnitAssignmentSerializer,
 )
 from .assignment_services import create_assignment, end_assignment
-from .models import ResidentUnitAssignment
+from .models import ResidentProfile, ResidentUnitAssignment
 from .permissions import CanManageResidents
 
 
