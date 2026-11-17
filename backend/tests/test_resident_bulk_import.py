@@ -1,7 +1,6 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from apps.estates.models import EstateMembership
 from apps.properties.models import Property, ResidentialUnit
 from apps.residents.models import ResidentProfile, ResidentStatus
 
