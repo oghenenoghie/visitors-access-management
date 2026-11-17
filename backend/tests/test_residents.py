@@ -186,3 +186,21 @@ def test_suspension_deactivates_account_when_no_other_active_estate_memberships(
     assert response.status_code == 200
     profile.user.refresh_from_db()
     assert profile.user.is_active is False
+
+
+
+def test_estate_manager_can_read_residents_but_cannot_approve(
+    api_client, auth, make_estate, make_member
+):
+    estate = make_estate()
+    manager = make_member(estate, EstateRole.ESTATE_MANAGER)
+    api_client.post(REGISTER, registration_payload(estate), format="json")
+    profile = ResidentProfile.objects.get(user__email="new.resident@example.com")
+    auth(manager)
+
+    listing = api_client.get(RESIDENTS)
+    assert listing.status_code == 200
+    assert listing.json()["results"][0]["id"] == str(profile.pk)
+
+    denied = api_client.post(f"{RESIDENTS}{profile.pk}/approve/", {}, format="json")
+    assert denied.status_code == 403
