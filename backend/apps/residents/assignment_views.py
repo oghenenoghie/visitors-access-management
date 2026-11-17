@@ -39,7 +39,11 @@ class ResidentUnitAssignmentViewSet(
         serializer = super().get_serializer(*args, **kwargs)
         if self.action == "create":
             user = self.request.user
-            if not user.is_platform_admin:
+            if (
+                user
+                and user.is_authenticated
+                and not getattr(user, "is_platform_admin", False)
+            ):
                 estate_ids = administered_estate_ids(user)
                 serializer.fields["resident_id"].queryset = ResidentProfile.objects.filter(
                     estate_id__in=estate_ids
@@ -59,7 +63,7 @@ class ResidentUnitAssignmentViewSet(
         queryset = ResidentUnitAssignment.objects.select_related(
             "resident__user", "resident__estate", "unit", "unit__property"
         )
-        if user.is_platform_admin:
+        if getattr(user, "is_platform_admin", False):
             return queryset
         readable_estate_ids = (
             EstateMembership.objects.active()
