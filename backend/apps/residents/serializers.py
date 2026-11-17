@@ -4,7 +4,7 @@ from rest_framework import serializers
 from apps.estates.models import Estate, EstateStatus
 from apps.users.models import User
 
-from .models import ResidentProfile, ResidentStatus
+from .models import ResidentProfile
 
 
 class ResidentRegistrationSerializer(serializers.Serializer):
