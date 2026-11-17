@@ -43,7 +43,8 @@ class Property(BaseModel):
         ordering = ["name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["estate", "parent", "name"], name="properties_parent_name_unique",
+                fields=["estate", "parent", "name"],
+                name="properties_parent_name_unique",
                 nulls_distinct=False,
             )
         ]
