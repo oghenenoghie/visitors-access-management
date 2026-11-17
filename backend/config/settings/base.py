@@ -166,6 +166,15 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "0.1.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "EstateStatusEnum": "apps.estates.models.EstateStatus.choices",
+        "MembershipStatusEnum": "apps.estates.models.MembershipStatus.choices",
+        "PropertyStatusEnum": "apps.properties.models.PropertyStatus.choices",
+        "ResidentStatusEnum": "apps.residents.models.ResidentStatus.choices",
+        "ResidentDocumentStatusEnum": "apps.residents.models.ResidentDocumentStatus.choices",
+        "ResidentAssignmentStatusEnum": "apps.residents.models.AssignmentStatus.choices",
+        "ResidentDocumentTypeEnum": "apps.residents.models.ResidentDocumentType.choices",
+    },
 }
 API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=DEBUG)
 
