@@ -17,7 +17,7 @@ from .document_serializers import (
     ResidentIdentityDocumentSerializer,
 )
 from .document_storage import read_identity_document, store_identity_document
-from .models import ResidentDocumentStatus, ResidentProfile
+from .models import ResidentDocumentStatus, ResidentProfile, ResidentStatus
 from .permissions import CanManageResidents
 from .serializers import (
     ResidentProfileSerializer,
@@ -75,7 +75,7 @@ class ResidentViewSet(
             return queryset
         if has_estate_role(user, [EstateRole.ESTATE_ADMIN]):
             return queryset.filter(estate_id__in=administered_estate_ids(user))
-        return queryset.filter(user=user, status="approved")
+        return queryset.filter(user=user, status=ResidentStatus.APPROVED)
 
     def _review(self, request, profile, service):
         serializer = ResidentReviewSerializer(data=request.data)
