@@ -4,7 +4,6 @@ from django.db import IntegrityError, transaction
 from apps.audit_logs.models import AuditLog
 from apps.estates.models import EstateRole
 
-
 pytestmark = pytest.mark.django_db
 
 PROPERTIES = "/api/v1/properties/"
