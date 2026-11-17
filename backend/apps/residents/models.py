@@ -60,7 +60,6 @@ class ResidentProfile(BaseModel):
         return f"{self.user.email} — {self.estate.estate_code} ({self.status})"
 
 
-
 class AssignmentStatus(models.TextChoices):
     ACTIVE = "active", "Active"
     ENDED = "ended", "Ended"
