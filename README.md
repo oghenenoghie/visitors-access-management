@@ -9,7 +9,7 @@ Estate platform connecting residents, security officers and administrators:
 
 ## Status
 
-Phase 1-2 (discovery, architecture, database and API design). No application code yet. Implementation starts after the approval gate.
+Architecture approved. M1 (foundation) done in `backend/`: Django project, custom user, estates and memberships, estate scoping, error envelope, health endpoint, Docker Compose, CI. Next: M2 (authentication and roles).
 
 ## Documentation
 
