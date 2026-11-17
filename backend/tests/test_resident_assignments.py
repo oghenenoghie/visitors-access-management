@@ -185,4 +185,29 @@ def test_estate_admin_cannot_assign_another_estates_resident(
         ASSIGNMENTS, assignment_payload(profile, unit), format="json"
     )
 
-    assert response.status_code == 404
+    assert response.status_code == 400
+
+
+
+def test_non_overlapping_primary_assignment_periods_are_allowed(
+    api_client, auth, make_estate, make_member
+):
+    estate = make_estate()
+    admin = make_member(estate, EstateRole.ESTATE_ADMIN)
+    profile = approved_profile(api_client, estate, admin)
+    first, second = make_unit(estate), make_unit(estate, "Block B", "B-202")
+    auth(admin)
+
+    first_assignment = api_client.post(
+        ASSIGNMENTS,
+        assignment_payload(profile, first, starts_on="2026-01-01", ends_on="2026-06-30"),
+        format="json",
+    )
+    second_assignment = api_client.post(
+        ASSIGNMENTS,
+        assignment_payload(profile, second, starts_on="2026-07-01"),
+        format="json",
+    )
+
+    assert first_assignment.status_code == 201
+    assert second_assignment.status_code == 201
