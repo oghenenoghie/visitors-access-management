@@ -6,8 +6,8 @@ from .views import (
     GateCheckOutView,
     GateOverrideView,
     GateVerifyView,
-    InvitationDetailView,
     InvitationCancelView,
+    InvitationDetailView,
     InvitationListCreateView,
 )
 
