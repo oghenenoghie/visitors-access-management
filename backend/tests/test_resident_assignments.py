@@ -22,9 +22,7 @@ def registration_payload(estate):
 
 
 def make_unit(estate, name="Block A", unit_number="A-101"):
-    property_record = Property.objects.create(
-        estate=estate, name=name, property_type="block"
-    )
+    property_record = Property.objects.create(estate=estate, name=name, property_type="block")
     return ResidentialUnit.objects.create(property=property_record, unit_number=unit_number)
 
 
@@ -49,27 +47,21 @@ def assignment_payload(profile, unit, **overrides):
     return payload
 
 
-def test_admin_can_assign_approved_resident_to_unit(
-    api_client, auth, make_estate, make_member
-):
+def test_admin_can_assign_approved_resident_to_unit(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     profile = approved_profile(api_client, estate, admin)
     unit = make_unit(estate)
     auth(admin)
 
-    response = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, unit), format="json"
-    )
+    response = api_client.post(ASSIGNMENTS, assignment_payload(profile, unit), format="json")
 
     assert response.status_code == 201
     assert response.json()["unit_id"] == str(unit.pk)
     assert response.json()["status"] == AssignmentStatus.ACTIVE
 
 
-def test_pending_resident_cannot_be_assigned(
-    api_client, auth, make_estate, make_member
-):
+def test_pending_resident_cannot_be_assigned(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     api_client.post(REGISTER, registration_payload(estate), format="json")
@@ -84,9 +76,7 @@ def test_pending_resident_cannot_be_assigned(
     assert response.status_code == 400
 
 
-def test_cross_estate_unit_assignment_is_rejected(
-    api_client, auth, make_estate, make_member
-):
+def test_cross_estate_unit_assignment_is_rejected(api_client, auth, make_estate, make_member):
     estate, other = make_estate(), make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     profile = approved_profile(api_client, estate, admin)
@@ -100,18 +90,14 @@ def test_cross_estate_unit_assignment_is_rejected(
     assert response.status_code == 400
 
 
-def test_overlapping_primary_assignment_is_rejected(
-    api_client, auth, make_estate, make_member
-):
+def test_overlapping_primary_assignment_is_rejected(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     profile = approved_profile(api_client, estate, admin)
     first, second = make_unit(estate), make_unit(estate, "Block B", "B-102")
     auth(admin)
 
-    created = api_client.post(
-        ASSIGNMENTS, assignment_payload(profile, first), format="json"
-    )
+    created = api_client.post(ASSIGNMENTS, assignment_payload(profile, first), format="json")
     assert created.status_code == 201
 
     overlap = api_client.post(
@@ -122,9 +108,7 @@ def test_overlapping_primary_assignment_is_rejected(
     assert overlap.status_code == 400
 
 
-def test_resident_can_only_list_own_assignments(
-    api_client, auth, make_estate, make_member
-):
+def test_resident_can_only_list_own_assignments(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     profile = approved_profile(api_client, estate, admin)
@@ -141,9 +125,7 @@ def test_resident_can_only_list_own_assignments(
     assert len(response.json()["results"]) == 1
 
 
-def test_admin_can_end_assignment_and_reassign_unit(
-    api_client, auth, make_estate, make_member
-):
+def test_admin_can_end_assignment_and_reassign_unit(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     profile = approved_profile(api_client, estate, admin)
