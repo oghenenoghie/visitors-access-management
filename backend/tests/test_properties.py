@@ -1,5 +1,6 @@
-import pytest
 from django.db import IntegrityError, transaction
+
+import pytest
 
 from apps.audit_logs.models import AuditLog
 from apps.estates.models import EstateRole
