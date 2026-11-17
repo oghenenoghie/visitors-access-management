@@ -49,11 +49,11 @@ Apps follow the master skill: authentication, users, estates, properties, reside
 ## Credentials [proposed details]
 
 - **QR token**: 32 random bytes from `secrets`, URL-safe encoded. Opaque. The QR encodes only the token (optionally with a version prefix).
-- **Numeric code**: configurable length, default 8 digits, generated with `secrets`. Default is open question Q2.
+- **Numeric code**: configurable length, default 8 digits, generated with `secrets`. Decided: 8 digits (Q2).
 - **Storage**: only `HMAC-SHA256(server_pepper, token)` is stored, never the token. HMAC (not bcrypt) is used because lookup is by value and the QR token is high entropy. The pepper lives in environment configuration and is rotatable.
 - **Scoping**: lookup is always `(estate_id, token_hash)`. `estate_id` comes from the officer's active shift, not from the request body. A partial unique index on `(estate_id, token_hash)` for active credentials detects collisions.
 - **Guessing defence for numeric codes**: rate limit per device and per officer, lockout after repeated failures, every failure written to `AccessEvent` as `REJECTED_ENTRY`, short validity windows.
-- Because only the hash is stored, the server cannot re-display an existing pass. The plaintext is returned once at generation. How a resident re-opens a pass later is open question Q11 (default: the app keeps it in SecureStore, and "reissue" revokes the old credential and creates a new one).
+- Because only the hash is stored, the server cannot re-display an existing pass. The plaintext is returned once at generation. How a resident re-opens a pass later is decided (Q11): the app keeps it in SecureStore, and "reissue" revokes the old credential and creates a new one.
 
 ## Verification and admission
 
@@ -67,7 +67,7 @@ Outcomes: `VALID, EXPIRED, CANCELLED, REVOKED, ALREADY_USED, NOT_YET_VALID, INVA
 
 Manual override is a separate permissioned action requiring a justification, creating a `MANUAL_OVERRIDE` event and an audit record, with optional supervisor approval.
 
-## Offline behaviour [proposed]
+## Offline behaviour (decided, Q3)
 
 Fail closed. If the gate app cannot reach the backend it shows an explicit offline state and does not admit by app. Admission while offline goes through the manual process and is entered as an override once connectivity returns.
 

@@ -36,7 +36,7 @@ Legend: ✅ allowed · 🔒 own records only · 🏢 within assigned estate · �
 - Security Officer visitor detail is limited to what gate operations need: visitor name, resident name, unit, validity window, vehicle registration, admission status.
 - Security roles act only through an active shift at a registered gate device in their estate.
 - Suspension of a user revokes all refresh tokens and invalidates sessions immediately.
-- Credentials of a suspended resident: policy undecided, see open question Q1. Until decided, suspension blocks new invitations only.
+- Suspending a resident revokes all of their active credentials immediately and blocks new invitations (decision Q1).
 - Super Administrator cross-estate reads are audited.
 
 ## Test requirement
