@@ -63,6 +63,8 @@ class ResidentUnitAssignmentViewSet(
         queryset = ResidentUnitAssignment.objects.select_related(
             "resident__user", "resident__estate", "unit", "unit__property"
         )
+        if not getattr(user, "is_authenticated", False):
+            return queryset.none()
         if getattr(user, "is_platform_admin", False):
             return queryset
         readable_estate_ids = (
