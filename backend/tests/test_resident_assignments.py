@@ -1,5 +1,3 @@
-import datetime
-
 import pytest
 
 from apps.estates.models import EstateRole
