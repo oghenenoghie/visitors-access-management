@@ -1,5 +1,6 @@
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
+from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -91,14 +92,31 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
         )
         return Response(self.get_serializer(result).data)
 
+    @extend_schema(
+        request=ResidentReviewSerializer,
+        responses=ResidentProfileSerializer,
+    )
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         return self._review(request, self.get_object(), approve_resident)
 
+    @extend_schema(
+        request=ResidentReviewSerializer,
+        responses=ResidentProfileSerializer,
+    )
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
         return self._review(request, self.get_object(), reject_resident)
 
+    @extend_schema(
+        methods=["GET"],
+        responses=ResidentIdentityDocumentSerializer(many=True),
+    )
+    @extend_schema(
+        methods=["POST"],
+        request=ResidentDocumentUploadSerializer,
+        responses=ResidentIdentityDocumentSerializer,
+    )
     @action(
         detail=True,
         methods=["get", "post"],
@@ -125,6 +143,7 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             status=status.HTTP_201_CREATED,
         )
 
+    @extend_schema(responses={200: OpenApiTypes.BINARY})
     @action(
         detail=True,
         methods=["get"],
@@ -154,6 +173,10 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             content_type=document.content_type,
         )
 
+    @extend_schema(
+        request=ResidentReviewSerializer,
+        responses=ResidentProfileSerializer,
+    )
     @action(detail=True, methods=["post"])
     def suspend(self, request, pk=None):
         return self._review(request, self.get_object(), suspend_resident)
