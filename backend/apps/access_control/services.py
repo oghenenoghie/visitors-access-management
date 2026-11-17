@@ -50,12 +50,16 @@ def _active_resident(*, actor, unit, now):
     ).exists()
     if not membership or not actor.is_active:
         raise PermissionDenied("Your resident membership is not active.")
-    assignment = ResidentUnitAssignment.objects.filter(
-        resident=profile,
-        unit=unit,
-        status=AssignmentStatus.ACTIVE,
-        starts_on__lte=now.date(),
-    ).filter(Q(ends_on__isnull=True) | Q(ends_on__gte=now.date())).exists()
+    assignment = (
+        ResidentUnitAssignment.objects.filter(
+            resident=profile,
+            unit=unit,
+            status=AssignmentStatus.ACTIVE,
+            starts_on__lte=now.date(),
+        )
+        .filter(Q(ends_on__isnull=True) | Q(ends_on__gte=now.date()))
+        .exists()
+    )
     if not assignment:
         raise PermissionDenied("You are not currently assigned to this residential unit.")
     return profile
@@ -126,11 +130,11 @@ def create_invitation(*, actor, data, request):
 
 @transaction.atomic
 def cancel_invitation(*, invitation, actor, request):
-    credential = AccessCredential.objects.select_for_update().filter(
-        invitation_id=invitation.pk
-    ).first()
-    invitation = VisitorInvitation.objects.select_for_update().select_related("estate").get(
-        pk=invitation.pk
+    credential = (
+        AccessCredential.objects.select_for_update().filter(invitation_id=invitation.pk).first()
+    )
+    invitation = (
+        VisitorInvitation.objects.select_for_update().select_related("estate").get(pk=invitation.pk)
     )
     if invitation.status != InvitationStatus.ACTIVE:
         raise ValidationError({"status": "Only active invitations can be cancelled."})
@@ -152,18 +156,23 @@ def cancel_invitation(*, invitation, actor, request):
 
 
 def _gate_for_actor(*, actor, gate_id, allowed_roles):
-    gate = GateDevice.objects.filter(pk=gate_id, status=GateDeviceStatus.ACTIVE).select_related(
-        "estate"
-    ).first()
+    gate = (
+        GateDevice.objects.filter(pk=gate_id, status=GateDeviceStatus.ACTIVE)
+        .select_related("estate")
+        .first()
+    )
     if gate is None:
         raise PermissionDenied("The gate device is unavailable.")
-    if not actor.is_platform_admin and not EstateMembership.objects.filter(
-        user=actor,
-        estate=gate.estate,
-        role__in=allowed_roles,
-        status=MembershipStatus.ACTIVE,
-        estate__status="active",
-    ).exists():
+    if (
+        not actor.is_platform_admin
+        and not EstateMembership.objects.filter(
+            user=actor,
+            estate=gate.estate,
+            role__in=allowed_roles,
+            status=MembershipStatus.ACTIVE,
+            estate__status="active",
+        ).exists()
+    ):
         raise PermissionDenied("You are not assigned to this gate's estate.")
     if not actor.is_active:
         raise PermissionDenied("Your account is inactive.")
@@ -174,9 +183,13 @@ def _lookup_credential(value):
     from .credentials import digest_secret
 
     digest = digest_secret(value.strip())
-    return AccessCredential.objects.select_related(
-        "invitation__visitor", "invitation__estate", "invitation__unit"
-    ).filter(Q(qr_token_hash=digest) | Q(access_code_hash=digest)).first()
+    return (
+        AccessCredential.objects.select_related(
+            "invitation__visitor", "invitation__estate", "invitation__unit"
+        )
+        .filter(Q(qr_token_hash=digest) | Q(access_code_hash=digest))
+        .first()
+    )
 
 
 def _validation_result(credential, now):
@@ -209,15 +222,20 @@ def verify_credential(*, value, gate, actor, request):
         credential = None
     result = _validation_result(credential, now) if credential else "INVALID"
     invitation = credential.invitation if credential else None
-    if result == "VALID" and AccessEvent.objects.filter(
-        invitation=invitation,
-        event_type=AccessEventType.ENTRY,
-        status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
-    ).exclude(
-        pk__in=AccessEvent.objects.filter(
-            related_entry__isnull=False, event_type=AccessEventType.EXIT
-        ).values("related_entry_id")
-    ).exists():
+    if (
+        result == "VALID"
+        and AccessEvent.objects.filter(
+            invitation=invitation,
+            event_type=AccessEventType.ENTRY,
+            status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
+        )
+        .exclude(
+            pk__in=AccessEvent.objects.filter(
+                related_entry__isnull=False, event_type=AccessEventType.EXIT
+            ).values("related_entry_id")
+        )
+        .exists()
+    ):
         result = "ALREADY_CHECKED_IN"
     if result != "VALID":
         AccessEvent.objects.create(
@@ -254,39 +272,62 @@ def check_in(*, value, gate, actor, request):
         credential = None
     if credential is None:
         event = AccessEvent.objects.create(
-            estate=gate.estate, gate_device=gate, officer=actor,
-            event_type=AccessEventType.ENTRY, status=AccessEventStatus.REJECTED,
-            occurred_at=timezone.now(), reason="INVALID",
+            estate=gate.estate,
+            gate_device=gate,
+            officer=actor,
+            event_type=AccessEventType.ENTRY,
+            status=AccessEventStatus.REJECTED,
+            occurred_at=timezone.now(),
+            reason="INVALID",
         )
         record(
-            action="access.check_in_rejected", actor=actor, estate=gate.estate,
-            new_values={"result": "INVALID", "gate_id": str(gate.pk)}, request=request,
+            action="access.check_in_rejected",
+            actor=actor,
+            estate=gate.estate,
+            new_values={"result": "INVALID", "gate_id": str(gate.pk)},
+            request=request,
         )
         return event
-    credential = AccessCredential.objects.select_for_update(of=("self",)).select_related(
-        "invitation__visitor", "invitation__estate", "invitation__unit"
-    ).get(pk=credential.pk)
+    credential = (
+        AccessCredential.objects.select_for_update(of=("self",))
+        .select_related("invitation__visitor", "invitation__estate", "invitation__unit")
+        .get(pk=credential.pk)
+    )
     invitation = VisitorInvitation.objects.select_for_update().get(pk=credential.invitation_id)
     result = _validation_result(credential, timezone.now())
-    if result == "VALID" and AccessEvent.objects.filter(
-        invitation=invitation,
-        event_type=AccessEventType.ENTRY,
-        status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
-    ).exclude(
-        pk__in=AccessEvent.objects.filter(
-            related_entry__isnull=False, event_type=AccessEventType.EXIT
-        ).values("related_entry_id")
-    ).exists():
+    if (
+        result == "VALID"
+        and AccessEvent.objects.filter(
+            invitation=invitation,
+            event_type=AccessEventType.ENTRY,
+            status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
+        )
+        .exclude(
+            pk__in=AccessEvent.objects.filter(
+                related_entry__isnull=False, event_type=AccessEventType.EXIT
+            ).values("related_entry_id")
+        )
+        .exists()
+    ):
         result = "ALREADY_CHECKED_IN"
     if result != "VALID":
         event = AccessEvent.objects.create(
-            estate=gate.estate, invitation=invitation, credential=credential,
-            gate_device=gate, officer=actor, event_type=AccessEventType.ENTRY,
-            status=AccessEventStatus.REJECTED, occurred_at=timezone.now(), reason=result,
+            estate=gate.estate,
+            invitation=invitation,
+            credential=credential,
+            gate_device=gate,
+            officer=actor,
+            event_type=AccessEventType.ENTRY,
+            status=AccessEventStatus.REJECTED,
+            occurred_at=timezone.now(),
+            reason=result,
         )
         record(
-            action="access.check_in_rejected", actor=actor, estate=gate.estate,
-            resource=invitation, new_values={"result": result, "gate_id": str(gate.pk)},
+            action="access.check_in_rejected",
+            actor=actor,
+            estate=gate.estate,
+            resource=invitation,
+            new_values={"result": result, "gate_id": str(gate.pk)},
             request=request,
         )
         return event
@@ -298,13 +339,21 @@ def check_in(*, value, gate, actor, request):
         credential.status = CredentialStatus.CONSUMED
     credential.save(update_fields=["uses_count", "status", "updated_at"])
     event = AccessEvent.objects.create(
-        estate=gate.estate, invitation=invitation, credential=credential,
-        gate_device=gate, officer=actor, event_type=AccessEventType.ENTRY,
-        status=AccessEventStatus.ACCEPTED, occurred_at=timezone.now(),
+        estate=gate.estate,
+        invitation=invitation,
+        credential=credential,
+        gate_device=gate,
+        officer=actor,
+        event_type=AccessEventType.ENTRY,
+        status=AccessEventStatus.ACCEPTED,
+        occurred_at=timezone.now(),
     )
     record(
-        action="access.checked_in", actor=actor, estate=gate.estate,
-        resource=invitation, new_values={"event_id": str(event.pk), "gate_id": str(gate.pk)},
+        action="access.checked_in",
+        actor=actor,
+        estate=gate.estate,
+        resource=invitation,
+        new_values={"event_id": str(event.pk), "gate_id": str(gate.pk)},
         request=request,
     )
     return event
@@ -312,27 +361,44 @@ def check_in(*, value, gate, actor, request):
 
 @transaction.atomic
 def check_out(*, invitation, gate, actor, request):
-    invitation = VisitorInvitation.objects.select_for_update().select_related(
-        "visitor", "estate"
-    ).get(pk=invitation.pk)
+    invitation = (
+        VisitorInvitation.objects.select_for_update()
+        .select_related("visitor", "estate")
+        .get(pk=invitation.pk)
+    )
     exited_ids = AccessEvent.objects.filter(
         related_entry__isnull=False, event_type=AccessEventType.EXIT
     ).values("related_entry_id")
-    entry = AccessEvent.objects.select_for_update().filter(
-        invitation=invitation,
-        event_type=AccessEventType.ENTRY,
-        status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
-    ).exclude(pk__in=exited_ids).order_by("-occurred_at").first()
+    entry = (
+        AccessEvent.objects.select_for_update()
+        .filter(
+            invitation=invitation,
+            event_type=AccessEventType.ENTRY,
+            status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
+        )
+        .exclude(pk__in=exited_ids)
+        .order_by("-occurred_at")
+        .first()
+    )
     if entry is None:
         raise ValidationError({"invitation": "There is no active check-in for this visitor."})
     event = AccessEvent.objects.create(
-        estate=gate.estate, invitation=invitation, credential=entry.credential,
-        gate_device=gate, officer=actor, event_type=AccessEventType.EXIT,
-        status=AccessEventStatus.ACCEPTED, occurred_at=timezone.now(), related_entry=entry,
+        estate=gate.estate,
+        invitation=invitation,
+        credential=entry.credential,
+        gate_device=gate,
+        officer=actor,
+        event_type=AccessEventType.EXIT,
+        status=AccessEventStatus.ACCEPTED,
+        occurred_at=timezone.now(),
+        related_entry=entry,
     )
     record(
-        action="access.checked_out", actor=actor, estate=gate.estate,
-        resource=invitation, new_values={"event_id": str(event.pk), "entry_id": str(entry.pk)},
+        action="access.checked_out",
+        actor=actor,
+        estate=gate.estate,
+        resource=invitation,
+        new_values={"event_id": str(event.pk), "entry_id": str(entry.pk)},
         request=request,
     )
     if invitation.access_type == AccessType.SINGLE_USE:
@@ -345,34 +411,48 @@ def check_out(*, invitation, gate, actor, request):
 def manual_override(*, invitation, gate, actor, reason, request):
     if not reason or not reason.strip():
         raise ValidationError({"reason": "A justification is required."})
-    credential = AccessCredential.objects.select_for_update().filter(
-        invitation_id=invitation.pk
-    ).first()
-    invitation = VisitorInvitation.objects.select_for_update().select_related("visitor").get(
-        pk=invitation.pk
+    credential = (
+        AccessCredential.objects.select_for_update().filter(invitation_id=invitation.pk).first()
+    )
+    invitation = (
+        VisitorInvitation.objects.select_for_update()
+        .select_related("visitor")
+        .get(pk=invitation.pk)
     )
     exited_ids = AccessEvent.objects.filter(
         related_entry__isnull=False, event_type=AccessEventType.EXIT
     ).values("related_entry_id")
-    if AccessEvent.objects.filter(
-        invitation=invitation,
-        event_type=AccessEventType.ENTRY,
-        status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
-    ).exclude(pk__in=exited_ids).exists():
+    if (
+        AccessEvent.objects.filter(
+            invitation=invitation,
+            event_type=AccessEventType.ENTRY,
+            status__in=[AccessEventStatus.ACCEPTED, AccessEventStatus.OVERRIDDEN],
+        )
+        .exclude(pk__in=exited_ids)
+        .exists()
+    ):
         raise ValidationError({"invitation": "This visitor is already checked in."})
     if credential:
         credential.uses_count = min(invitation.max_uses, credential.uses_count + 1)
         credential.status = CredentialStatus.CONSUMED
         credential.save(update_fields=["uses_count", "status", "updated_at"])
     event = AccessEvent.objects.create(
-        estate=gate.estate, invitation=invitation,
-        credential=credential, gate_device=gate, officer=actor,
-        event_type=AccessEventType.ENTRY, status=AccessEventStatus.OVERRIDDEN,
-        occurred_at=timezone.now(), reason=reason.strip()[:500],
+        estate=gate.estate,
+        invitation=invitation,
+        credential=credential,
+        gate_device=gate,
+        officer=actor,
+        event_type=AccessEventType.ENTRY,
+        status=AccessEventStatus.OVERRIDDEN,
+        occurred_at=timezone.now(),
+        reason=reason.strip()[:500],
     )
     record(
-        action="access.manual_override", actor=actor, estate=gate.estate,
-        resource=invitation, new_values={"reason": reason.strip()[:500], "event_id": str(event.pk)},
+        action="access.manual_override",
+        actor=actor,
+        estate=gate.estate,
+        resource=invitation,
+        new_values={"reason": reason.strip()[:500], "event_id": str(event.pk)},
         request=request,
     )
     return event
