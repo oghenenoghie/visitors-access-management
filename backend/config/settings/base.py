@@ -13,8 +13,13 @@ if _env_file.exists():
     environ.Env.read_env(_env_file)
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
+# Key for application-level encryption of stored secrets (Fernet). Required; rotate with care.
+FIELD_ENCRYPTION_KEY = env("FIELD_ENCRYPTION_KEY")
+# Key material for HMAC of stored credentials and codes. Defaults to SECRET_KEY.
+CREDENTIAL_PEPPER = env("CREDENTIAL_PEPPER", default=SECRET_KEY)
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+BEHIND_PROXY = env.bool("DJANGO_BEHIND_PROXY", default=False)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -30,6 +35,8 @@ INSTALLED_APPS = [
     "apps.common",
     "apps.users",
     "apps.estates",
+    "apps.audit_logs",
+    "apps.authentication",
 ]
 
 MIDDLEWARE = [
@@ -116,7 +123,31 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",
     ],
     "EXCEPTION_HANDLER": "apps.common.exceptions.api_exception_handler",
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/min",
+        "user": "600/min",
+        "login": "10/min",
+        "two_factor": "10/min",
+        "password_reset": "5/min",
+    },
+    # Client IP is the socket address unless exactly one trusted proxy sits in front.
+    "NUM_PROXIES": 1 if BEHIND_PROXY else 0,
 }
+
+# Authentication policy
+TWO_FACTOR = {
+    "ISSUER": "Estate Access",
+    "CHALLENGE_MAX_AGE": 300,  # seconds a password-verified sign-in may wait for its 2FA step
+    # Estate roles that use the management dashboard and therefore need 2FA.
+    # Platform administrators always need it.
+    "ROLES": ["estate_admin", "estate_manager"],
+}
+PASSWORD_RESET = {"CODE_TTL_MINUTES": 30, "MAX_FAILED_ATTEMPTS": 5}
+LOGIN_LOCKOUT = {"MAX_FAILURES": 5, "WINDOW_SECONDS": 900}
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
@@ -141,7 +172,7 @@ CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TIMEZONE = TIME_ZONE
 
 # Transport security (production)
-if env.bool("DJANGO_BEHIND_PROXY", default=False):
+if BEHIND_PROXY:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=not DEBUG)
 SESSION_COOKIE_SECURE = not DEBUG

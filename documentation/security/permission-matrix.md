@@ -48,3 +48,6 @@ Legend: ✅ allowed · 🔒 own records only · 🏢 within assigned estate · �
 ## Test requirement
 
 For each endpoint, tests cover: allowed role, forbidden role, other estate, other resident's object, suspended user, and expired token.
+- Two-factor (TOTP + recovery codes) is mandatory for platform admins and the estate_admin and estate_manager roles (`TWO_FACTOR["ROLES"]`). Security supervisors, officers and residents do not use it. Open decision: whether supervisors should.
+- Accepted risk: an administrator who issues a reset code for an account without 2FA can set its password and take it over. Mitigations: every issue and redemption is audited, codes expire in 30 minutes, are single use, burn after 5 wrong attempts, and revoke the user's sessions on use. Administrators cannot issue codes for platform admins or for themselves.
+- Admin-reset of a lost authenticator (`/admin/users/{id}/two-factor-reset/`) follows the same scoping and is audited.

@@ -4,6 +4,7 @@ import os
 
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-only-secret-key-not-for-production")
 os.environ.setdefault("DJANGO_DEBUG", "false")
+os.environ.setdefault("FIELD_ENCRYPTION_KEY", "pxuHdtPdX-jG9iHOBUbNdzx8kiuvXPUXKTs_D7pCSxk=")
 os.environ.setdefault("DATABASE_URL", "postgres://estate:estate@localhost:5432/estate_access")
 
 from .base import *  # noqa: E402, F403

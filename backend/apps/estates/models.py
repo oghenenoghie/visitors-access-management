@@ -1,8 +1,8 @@
-import re
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 
 from apps.common.models import BaseModel
@@ -14,6 +14,12 @@ def validate_timezone(value):
         ZoneInfo(value)
     except (ZoneInfoNotFoundError, ValueError, KeyError) as exc:
         raise ValidationError("Enter a valid IANA timezone, e.g. Africa/Lagos.") from exc
+
+
+estate_code_validator = RegexValidator(
+    r"^[A-Z0-9][A-Z0-9_-]{1,31}$",
+    "Use 2-32 characters: capitals, digits, hyphen or underscore.",
+)
 
 
 class EstateStatus(models.TextChoices):
@@ -43,7 +49,7 @@ class EstateQuerySet(EstateScopedQuerySet):
 
 class Estate(BaseModel):
     name = models.CharField(max_length=200)
-    estate_code = models.CharField(max_length=32, unique=True)
+    estate_code = models.CharField(max_length=32, unique=True, validators=[estate_code_validator])
     address = models.TextField(blank=True)
     contact_email = models.EmailField(blank=True)
     contact_phone = models.CharField(max_length=32, blank=True)
@@ -61,13 +67,6 @@ class Estate(BaseModel):
 
     def __str__(self):
         return f"{self.name} ({self.estate_code})"
-
-    def clean(self):
-        super().clean()
-        if self.estate_code and not re.fullmatch(r"[A-Z0-9][A-Z0-9_-]{1,31}", self.estate_code):
-            raise ValidationError(
-                {"estate_code": "Use 2-32 characters: capitals, digits, hyphen or underscore."}
-            )
 
 
 class EstateMembershipQuerySet(EstateScopedQuerySet):

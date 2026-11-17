@@ -1,0 +1,13 @@
+# ruff: noqa: S105  (audit action names, not passwords)
+LOGIN_SUCCESS = "auth.login_success"
+LOGIN_FAILED = "auth.login_failed"
+LOGIN_LOCKED = "auth.login_locked"
+LOGOUT = "auth.logout"
+TWO_FACTOR_ENROLLED = "auth.two_factor_enrolled"
+TWO_FACTOR_FAILED = "auth.two_factor_failed"
+TWO_FACTOR_RESET = "auth.two_factor_reset"
+PASSWORD_RESET_ISSUED = "auth.password_reset_issued"
+PASSWORD_RESET_USED = "auth.password_reset_used"
+PASSWORD_RESET_FAILED = "auth.password_reset_failed"
+ESTATE_CREATED = "estate.created"
+ESTATE_UPDATED = "estate.updated"

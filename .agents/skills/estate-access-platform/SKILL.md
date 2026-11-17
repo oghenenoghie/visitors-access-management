@@ -1171,6 +1171,7 @@ POST /api/v1/auth/logout/
 POST /api/v1/auth/token/refresh/
 POST /api/v1/auth/password/reset/
 POST /api/v1/auth/2fa/setup/
+POST /api/v1/auth/2fa/confirm/
 POST /api/v1/auth/2fa/verify/
 GET  /api/v1/auth/me/
 ```
@@ -1232,6 +1233,7 @@ GET    /api/v1/admin/audit-logs/
 GET    /api/v1/admin/security-personnel/
 POST   /api/v1/admin/security-personnel/
 POST   /api/v1/admin/users/{id}/password-reset/
+POST   /api/v1/admin/users/{id}/two-factor-reset/
 GET    /api/v1/admin/settings/
 PATCH  /api/v1/admin/settings/
 ```
