@@ -102,7 +102,6 @@ def test_identity_document_rejects_mismatched_file_signature(api_client, make_es
     assert not ResidentProfile.objects.filter(user__email="bad.document@example.com").exists()
 
 
-
 def test_estate_manager_cannot_view_resident_identity_documents(
     api_client, auth, make_estate, make_member
 ):
