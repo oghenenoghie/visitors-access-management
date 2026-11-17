@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ("estate", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name="properties", to="estates.estate")),
                 ("parent", models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="children", to="properties.property")),
             ],
-            options={"ordering": ["name"], "indexes": [models.Index(fields=["estate", "property_type", "status"], name="properties_estate_type_status")], "constraints": [models.UniqueConstraint(fields=("estate", "parent", "name"), name="properties_parent_name_unique")]},
+            options={"ordering": ["name"], "indexes": [models.Index(fields=["estate", "property_type", "status"], name="properties_estate_type_status")], "constraints": [models.UniqueConstraint(fields=("estate", "parent", "name"), name="properties_parent_name_unique", nulls_distinct=False)]},
         ),
         migrations.CreateModel(
             name="ResidentialUnit",
