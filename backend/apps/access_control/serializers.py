@@ -90,11 +90,18 @@ class AccessEventSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+
 class GateVerifyResponseSerializer(serializers.Serializer):
     result = serializers.ChoiceField(
         choices=[
-            "VALID", "EXPIRED", "CANCELLED", "REVOKED", "ALREADY_USED",
-            "NOT_YET_VALID", "INVALID", "ALREADY_CHECKED_IN",
+            "VALID",
+            "EXPIRED",
+            "CANCELLED",
+            "REVOKED",
+            "ALREADY_USED",
+            "NOT_YET_VALID",
+            "INVALID",
+            "ALREADY_CHECKED_IN",
         ]
     )
     visitor_name = serializers.CharField(allow_null=True, required=False)
