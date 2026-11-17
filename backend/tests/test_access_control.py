@@ -36,9 +36,7 @@ def access_context(make_estate, make_member):
     profile = ResidentProfile.objects.create(
         user=resident, estate=estate, status=ResidentStatus.APPROVED
     )
-    property_node = Property.objects.create(
-        estate=estate, name="Block A", property_type="building"
-    )
+    property_node = Property.objects.create(estate=estate, name="Block A", property_type="building")
     unit = ResidentialUnit.objects.create(property=property_node, unit_number="A-101")
     ResidentUnitAssignment.objects.create(
         resident=profile,
@@ -53,8 +51,14 @@ def access_context(make_estate, make_member):
         estate=estate, name="Main Gate", device_identifier=f"gate-{estate.pk}"
     )
     return {
-        "estate": estate, "resident": resident, "profile": profile, "unit": unit,
-        "officer": officer, "supervisor": supervisor, "admin": admin, "gate": gate,
+        "estate": estate,
+        "resident": resident,
+        "profile": profile,
+        "unit": unit,
+        "officer": officer,
+        "supervisor": supervisor,
+        "admin": admin,
+        "gate": gate,
     }
 
 
@@ -240,10 +244,14 @@ def test_concurrent_single_use_consumption_only_admits_once(access_context):
 
     assert statuses.count(AccessEventStatus.ACCEPTED) == 1
     assert statuses.count(AccessEventStatus.REJECTED) == 1
-    assert AccessEvent.objects.filter(
-        invitation=invitation, status=AccessEventStatus.ACCEPTED,
-        event_type=AccessEventType.ENTRY,
-    ).count() == 1
+    assert (
+        AccessEvent.objects.filter(
+            invitation=invitation,
+            status=AccessEventStatus.ACCEPTED,
+            event_type=AccessEventType.ENTRY,
+        ).count()
+        == 1
+    )
 
 
 
