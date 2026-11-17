@@ -12,7 +12,7 @@ def test_create_user_normalises_email_and_hashes_password_with_argon2(db):
     assert user.password.startswith("argon2$")
     assert user.check_password("a-Long-test-passw0rd!")
     assert user.role == PlatformRole.NONE
-    assert not user.is_verified and not user.is_staff and not user.is_platform_admin
+    assert not user.is_staff and not user.is_platform_admin
 
 
 def test_user_id_is_a_uuid(db):
@@ -35,7 +35,7 @@ def test_superuser_is_platform_admin(db):
     admin = User.objects.create_superuser(
         "root@example.com", "a-Long-test-passw0rd!", first_name="Root", last_name="Admin"
     )
-    assert admin.is_staff and admin.is_superuser and admin.is_verified
+    assert admin.is_staff and admin.is_superuser
     assert admin.role == PlatformRole.SUPER_ADMIN
     assert admin.is_platform_admin
 

@@ -25,13 +25,15 @@ Legend: ✅ allowed · 🔒 own records only · 🏢 within assigned estate · �
 | Gate monitoring and rejected attempts | ✅ | 🏢 | 🏢 | ❌ | ❌ | 🏢 | own gate, own events |
 | Reports and exports | ✅ | 🏢 | 🏢 | ❌ | ❌ | 🏢 gate reports | ❌ |
 | View resident ID document (each view audited) | ✅ | ✅ authorised only | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Issue password reset code | ✅ | 🏢 (not for platform admins) | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Audit logs (read-only) | ✅ | 🏢 | ⚙️ | ❌ | ❌ | ❌ | ❌ |
 | Edit or delete audit logs | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Notifications | — | 🏢 | 🏢 | 🔒 | 🔒 | 🔒 | 🔒 |
 
 ## Rules
 
-- Dashboard accounts (all management roles) require two-factor authentication.
+- Dashboard accounts (all management roles) require two-factor authentication with an authenticator app (no SMS or email).
+- Password reset codes are issued only by administrators; every issue and redemption is audited.
 - Resident ID documents open only through short-lived access by authorised administrators; each view is written to the audit log.
 
 - The mobile resident app exposes no administrative functions; the security app exposes no resident management.

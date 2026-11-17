@@ -46,4 +46,4 @@ These are decisions the master skill leaves open or that need a change to its mo
 
 ## Dependencies
 
-Figma file (optional but wanted for design-to-code), Firebase project for FCM, SMS or email provider for activation and password reset, hosting accounts, Google Play developer account, estate branding approval.
+Figma file (optional but wanted for design-to-code), Firebase project for FCM, hosting accounts, Google Play developer account, estate branding approval.

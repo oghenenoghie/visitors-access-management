@@ -12,8 +12,8 @@ Source: *Estate Gate Access & Visitor Management System* proposal, Aqvessa Techn
 | C4 | Visitors provide **only name and telephone number** (data minimisation) | `Visitor` also has `vehicle_registration` and `notes` | Keep vehicle registration optional; decision Q12 on whether the minimisation statement needs an exception. |
 | C5 | Visitor records **deleted or anonymised automatically** after an Estate-set period (**12 months proposed**) | Master: preserve historical visitor and access records; no deletes without an approved retention process | Compatible: the proposal is the approved retention process. Anonymise visitor PII after the period; keep event rows and the audit log. Default 12 months. |
 | C6 | Reports exportable to **PDF and Excel** | CSV or PDF | Use PDF and Excel (xlsx); CSV optional. |
-| C7 | **Password recovery by one-time code**, SMS gateway for OTP and alerts | Docs defaulted to email | SMS OTP is primary; email optional. Updates Q7. |
-| C8 | **Two-factor authentication for all dashboard accounts**; session expiry and remote sign-out | Not specified | Add. |
+| C7 | **Password recovery by one-time code**, SMS gateway for OTP and alerts | Docs defaulted to email | **Decided 2026-11-17: no SMS or email.** Administrator-issued single-use reset code; activation by approval. Proposal sections 3.1, 4 (external services), 5.1 and Appendix A3 (SMS cost) must be corrected. |
+| C8 | **Two-factor authentication for all dashboard accounts**; session expiry and remote sign-out | Not specified | Add, using an authenticator app (TOTP) with recovery codes, since SMS and email are out. |
 | C9 | QR carries a **digitally signed token**, forged QR rejected before the database is checked | Opaque random token | Combine: random token plus a signature tag checked before lookup. |
 | C10 | Timeline: discovery 1 wk, architecture/design 2 wks, **development 4 wks (W4-W7)**, integration and testing 2 wks, deployment 1 wk | Master: backend in W3-W4, apps W5-W7 | Client commitments follow the proposal; plan realigned below. |
 

@@ -32,7 +32,6 @@ class UserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_verified", True)
         extra_fields.setdefault("role", PlatformRole.SUPER_ADMIN)
         if not extra_fields["is_staff"] or not extra_fields["is_superuser"]:
             raise ValueError("A superuser must have is_staff and is_superuser set to True.")
@@ -50,7 +49,6 @@ class User(BaseModel, AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=150)
     role = models.CharField(max_length=20, choices=PlatformRole.choices, default=PlatformRole.NONE)
     is_active = models.BooleanField(default=True)
-    is_verified = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
 
     objects = UserManager()

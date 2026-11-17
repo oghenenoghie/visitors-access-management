@@ -49,7 +49,6 @@ erDiagram
     string phone_number
     string password
     bool is_active
-    bool is_verified
   }
   ESTATE_MEMBERSHIP {
     uuid id PK
@@ -123,6 +122,8 @@ Remaining entities (`Property`, `ResidentialUnit`, `ResidentUnitAssignment`, `Ga
 | `Visitor.estate_id`, `Visitor.created_by_resident_id` | Prevents one resident reaching another's visitor records. |
 | `AccessCredential.estate_id` | Estate-scoped credential lookup at the gate. |
 | `AccessEvent.entry_event_id` (self FK, EXIT only) | Links an exit to its original entry. |
+| `PasswordResetCode` (user, code_hash, issued_by, expires_at, used_at) | Administrator-issued, single-use recovery; no SMS or email. |
+| `TotpDevice` (user, encrypted secret, confirmed_at) and `RecoveryCode` (user, code_hash, used_at) | Authenticator-app 2FA for dashboard accounts. |
 | `ResidentIdDocument` (resident_profile, storage_key, encrypted, uploaded_at, deleted_at) | Proposal requires encrypted ID upload; every admin view is an `AuditLog` entry; deleted on account closure. |
 | `Property` street level (`street` field or street property type) | Proposal manages streets, blocks and units. |
 | `Incident` (estate, reported_by, gate_device, severity, description, status, created_at) | Needed by the gate incident API and the dashboard Incidents module. |

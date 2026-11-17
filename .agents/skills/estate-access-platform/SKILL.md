@@ -362,7 +362,6 @@ Fields:
 - last_name
 - role
 - is_active
-- is_verified
 - last_login
 - created_at
 - updated_at
@@ -588,13 +587,18 @@ Required functionality:
 - Login.
 - Logout.
 - Refresh token.
-- Password recovery.
-- Password reset.
-- Account activation.
+- Password recovery through an administrator-issued, single-use reset code.
+- Password reset (redeeming that code; revokes existing sessions).
+- Account activation by administrator approval.
+- Two-factor authentication (authenticator app) for all dashboard accounts.
 - Session expiry.
 - Role verification.
 - Device registration for notifications.
 - Account suspension.
+
+## No SMS or email verification
+
+Decision 2026-11-17: the platform sends no SMS or email for verification or recovery. Accounts are activated by administrator approval. Forgotten passwords are recovered with a single-use reset code issued by an authorised administrator and handed over in person or by phone: high entropy, short expiry, stored hashed, issuing and redemption audited, redemption rate limited, all sessions revoked on use. Dashboard accounts use an authenticator app (TOTP) with recovery codes. Push notifications (FCM) and native pass sharing are unaffected.
 
 ## Registration
 
@@ -776,7 +780,7 @@ Build a professional, intuitive Android application.
 2. Onboarding.
 3. Registration.
 4. Login.
-5. Password recovery.
+5. Password recovery (enter an administrator-issued reset code).
 6. Resident home dashboard.
 7. Create visitor invitation.
 8. Invitation confirmation.
@@ -1165,8 +1169,9 @@ Base URL:
 POST /api/v1/auth/login/
 POST /api/v1/auth/logout/
 POST /api/v1/auth/token/refresh/
-POST /api/v1/auth/password/forgot/
 POST /api/v1/auth/password/reset/
+POST /api/v1/auth/2fa/setup/
+POST /api/v1/auth/2fa/verify/
 GET  /api/v1/auth/me/
 ```
 
@@ -1226,6 +1231,7 @@ GET    /api/v1/admin/reports/
 GET    /api/v1/admin/audit-logs/
 GET    /api/v1/admin/security-personnel/
 POST   /api/v1/admin/security-personnel/
+POST   /api/v1/admin/users/{id}/password-reset/
 GET    /api/v1/admin/settings/
 PATCH  /api/v1/admin/settings/
 ```

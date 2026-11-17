@@ -15,8 +15,8 @@ class UserCreationForm(BaseUserCreationForm):
 class UserAdmin(BaseUserAdmin):
     add_form = UserCreationForm
     ordering = ("email",)
-    list_display = ("email", "first_name", "last_name", "role", "is_active", "is_verified")
-    list_filter = ("role", "is_active", "is_verified", "is_staff")
+    list_display = ("email", "first_name", "last_name", "role", "is_active")
+    list_filter = ("role", "is_active", "is_staff")
     search_fields = ("email", "first_name", "last_name", "phone_number")
     readonly_fields = ("last_login", "created_at", "updated_at")
     fieldsets = (
@@ -28,7 +28,6 @@ class UserAdmin(BaseUserAdmin):
                 "fields": (
                     "role",
                     "is_active",
-                    "is_verified",
                     "is_staff",
                     "is_superuser",
                     "groups",

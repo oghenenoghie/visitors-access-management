@@ -6,7 +6,7 @@ Baseline from the master skill's ten-week schedule, broken into milestones. Each
 |---|---|---|---|
 | M0 Approval gate | 1-2 | Architecture, ERD, permission matrix, open questions, design system and screen inventory | Owner approves docs and answers Q1-Q3 at minimum |
 | M1 Foundation | 3 | Monorepo scaffold, Docker Compose (Postgres, Redis), Django project, custom user, estates, memberships, CI | CI green, migrations clean, `.env.example` per app |
-| M2 Auth and roles | 3 | JWT login/refresh/logout, password reset, activation, role permissions, estate-scoped base queryset, audit log base | Permission tests green, negative IDOR tests |
+| M2 Auth and roles | 3 | JWT login/refresh/logout, admin-issued password reset codes, TOTP 2FA for dashboard accounts, activation by approval, role permissions, estate-scoped base queryset, audit log base | Permission tests green, negative IDOR tests |
 | M3 Residents and properties | 4 | Properties, streets, units, resident registration with encrypted ID upload, approval, assignments, bulk data import | Approval flow tested end to end |
 | M4 Access engine | 4 | Invitations, credentials, verify, check-in/out, override, one-time and multi-use, concurrency | Seven acceptance scenarios pass, concurrent-consume test passes |
 | M5 Resident app | 5 | Design system package, auth, dashboard, create invitation, pass with QR and share, history, notifications | Runs on Android against the real API |

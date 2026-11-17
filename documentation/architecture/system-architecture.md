@@ -73,7 +73,7 @@ Fail closed. If the gate app cannot reach the backend it shows an explicit offli
 
 ## Authentication
 
-Passwords hashed with Argon2. Two-factor authentication is required for every dashboard account. Password recovery uses a one-time code by SMS. Users can see sessions and sign out remotely. Simple JWT with short-lived access tokens and rotating refresh tokens, blacklist on logout, suspension and password reset. Tokens in flutter_secure_storage (Android Keystore) on mobile. The dashboard keeps tokens in httpOnly cookies behind its own Next.js route handlers, not in `localStorage`. Gate devices are registered (`GateDevice`), and security logins are bound to an active `SecurityShift` and device. Rate limiting on login, password recovery and verification.
+Passwords hashed with Argon2. Two-factor authentication is required for every dashboard account. No SMS or email is used: accounts are activated by administrator approval, and a forgotten password is recovered with a single-use reset code issued by an authorised administrator (high entropy, short expiry, stored hashed, issuing and redemption audited and rate limited, all sessions revoked on use). Dashboard 2FA uses an authenticator app (TOTP) with recovery codes. Users can see sessions and sign out remotely. Simple JWT with short-lived access tokens and rotating refresh tokens, blacklist on logout, suspension and password reset. Tokens in flutter_secure_storage (Android Keystore) on mobile. The dashboard keeps tokens in httpOnly cookies behind its own Next.js route handlers, not in `localStorage`. Gate devices are registered (`GateDevice`), and security logins are bound to an active `SecurityShift` and device. Rate limiting on login, password recovery and verification.
 
 ## Notifications
 
