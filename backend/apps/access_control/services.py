@@ -114,7 +114,7 @@ def create_invitation(*, actor, data, request):
         estate=profile.estate,
         resource=invitation,
         new_values={
-            "visitor": visitor.full_name,
+            "visitor_id": str(visitor.pk),
             "unit_id": str(unit.pk),
             "access_type": access_type,
             "valid_until": valid_until,
