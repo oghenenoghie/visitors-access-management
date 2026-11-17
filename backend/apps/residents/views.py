@@ -17,7 +17,7 @@ from .document_serializers import (
 )
 from .document_storage import read_identity_document, store_identity_document
 from .models import ResidentDocumentStatus, ResidentProfile, ResidentStatus
-from .permissions import CanManageResidents
+from .permissions import CanAccessResidentDocuments, CanManageResidents
 from .serializers import (
     ResidentProfileSerializer,
     ResidentRegistrationSerializer,
@@ -59,6 +59,8 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def get_permissions(self):
         if self.action in ("approve", "reject", "suspend"):
             return [CanManageResidents()]
+        if self.action in ("documents", "download_document"):
+            return [CanAccessResidentDocuments()]
         return [IsAuthenticated()]
 
     def get_queryset(self):
