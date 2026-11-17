@@ -1,10 +1,8 @@
-from django.db import IntegrityError, transaction
-
 import pytest
+from django.db import IntegrityError, transaction
 
 from apps.audit_logs.models import AuditLog
 from apps.estates.models import EstateRole
-
 
 pytestmark = pytest.mark.django_db
 
@@ -12,9 +10,7 @@ PROPERTIES = "/api/v1/properties/"
 UNITS = "/api/v1/residential-units/"
 
 
-def test_estate_admin_can_create_property_and_unit(
-    api_client, auth, make_estate, make_member
-):
+def test_estate_admin_can_create_property_and_unit(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     auth(admin)
@@ -24,7 +20,7 @@ def test_estate_admin_can_create_property_and_unit(
         {"estate_id": str(estate.pk), "name": "Palm Avenue", "property_type": "street"},
         format="json",
     )
-    assert street.status_code == 201
+    assert street.status_code == 201, street.data
     street_id = street.json()["id"]
 
     unit = api_client.post(
@@ -62,9 +58,7 @@ def test_resident_can_read_but_cannot_write_property_records(
     assert denied.status_code == 403
 
 
-def test_other_estate_records_are_not_visible(
-    api_client, auth, make_estate, make_member
-):
+def test_other_estate_records_are_not_visible(api_client, auth, make_estate, make_member):
     from apps.properties.models import Property
 
     own_estate, other_estate = make_estate(), make_estate()
@@ -79,9 +73,7 @@ def test_other_estate_records_are_not_visible(
     assert str(foreign.pk) not in str(response.json())
 
 
-def test_property_parent_must_belong_to_same_estate(
-    api_client, auth, make_estate, make_member
-):
+def test_property_parent_must_belong_to_same_estate(api_client, auth, make_estate, make_member):
     from apps.properties.models import Property
 
     estate, other_estate = make_estate(), make_estate()
@@ -105,9 +97,7 @@ def test_property_parent_must_belong_to_same_estate(
     assert "parent_id" in response.json()["error"]["details"]
 
 
-def test_property_and_unit_deletion_are_not_exposed(
-    api_client, auth, make_estate, make_member
-):
+def test_property_and_unit_deletion_are_not_exposed(api_client, auth, make_estate, make_member):
     from apps.properties.models import Property
 
     estate = make_estate()
@@ -120,9 +110,7 @@ def test_property_and_unit_deletion_are_not_exposed(
     assert Property.objects.filter(pk=item.pk).exists()
 
 
-def test_duplicate_unit_location_is_rejected(
-    make_estate, make_member
-):
+def test_duplicate_unit_location_is_rejected(make_estate, make_member):
     from apps.properties.models import Property, ResidentialUnit
 
     estate = make_estate()
@@ -131,3 +119,22 @@ def test_duplicate_unit_location_is_rejected(
     ResidentialUnit.objects.create(property=parent, unit_number="12", block="A")
     with pytest.raises(IntegrityError), transaction.atomic():
         ResidentialUnit.objects.create(property=parent, unit_number="12", block="A")
+
+
+def test_property_cannot_be_moved_to_another_estate(api_client, auth, make_estate, make_member):
+    from apps.properties.models import Property
+
+    own, other = make_estate(), make_estate()
+    admin = make_member(own, EstateRole.ESTATE_ADMIN)
+    item = Property.objects.create(estate=own, name="Protected Street", property_type="street")
+    auth(admin)
+
+    response = api_client.patch(
+        f"{PROPERTIES}{item.pk}/",
+        {"estate_id": str(other.pk)},
+        format="json",
+    )
+
+    assert response.status_code == 400
+    item.refresh_from_db()
+    assert item.estate_id == own.pk

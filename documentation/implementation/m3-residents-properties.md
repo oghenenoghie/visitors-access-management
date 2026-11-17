@@ -1,57 +1,115 @@
 # M3 — Residents and Properties Implementation
 
-Status: **In progress**  
+Status: **Complete — implementation and CI verified**  
 Working branch: `feat/m3-residents-properties`  
 Baseline: M2 commit `8ef51d95d08aa7fa3a3137e33cb485751502bec3`
 
-## Scope and sequencing
+## Implemented
 
-M3 builds the estate's property inventory first, then resident identity and unit assignments. Resident access must remain disabled until an administrator approves the profile. No resident should gain visitor-invitation permissions merely by supplying a unit number.
+### Properties and residential units
+- Estate-scoped property hierarchy: street, block, building and compound.
+- Residential units with unit number, block, floor and active/inactive status.
+- Uniqueness constraints for property names within a parent and unit locations within a property.
+- Estate-scoped read APIs; create/update restricted to platform and estate administrators.
+- Cross-estate parentage and reassignment validation.
+- Delete is not exposed; records are deactivated instead.
+- Append-only audit events for property/unit create and update.
 
-### Implemented in the first slice
+### Resident registration and review
+- Estate-specific resident profile with pending, approved, rejected and suspended states.
+- Public registration accepts estate code, email, password, name, optional phone and optional identity document.
+- New accounts remain inactive and have no estate membership until approved.
+- Registration is rate limited to 5 attempts per hour and uses configured Django password validators.
+- Estate administrators can list only residents in estates they administer; residents can retrieve only their own approved profile.
+- Approval activates the account and creates an active resident membership.
+- Rejection requires a reason and leaves the account inactive.
+- Suspension suspends only the resident's membership in that estate; it does not disable other estate memberships.
+- Registration and review actions are audited.
 
-- New `apps.properties` Django app.
-- Estate-scoped `Property` hierarchy with street, block, building and compound types.
-- Estate-scoped `ResidentialUnit` records with unit number, block, floor and active/inactive status.
-- PostgreSQL uniqueness constraints for property names within a parent and unit locations within a property.
-- Read APIs scoped through active estate membership.
-- Create/update restricted to platform administrators and estate administrators. Delete is intentionally not exposed; records are deactivated instead.
-- Audit entries for property and unit creation/update.
-- API routes: `GET/POST/PATCH /api/v1/properties/` and `GET/POST/PATCH /api/v1/residential-units/` (detail routes follow the DRF router conventions).
-- Initial API tests cover creation, resident read-only access, cross-estate isolation, cross-estate parent rejection and non-deletion.
+### Encrypted identity documents
+- Accepts PDF, JPEG and PNG files up to 10 MB; validates extension against file signature.
+- Generates a random per-file Fernet key and wraps it with `FIELD_ENCRYPTION_KEY`.
+- Stores only encrypted file bytes through Django's configured default storage backend.
+- Stores metadata, plaintext SHA-256 integrity digest and wrapped data key in PostgreSQL.
+- List responses never expose storage keys or encryption keys.
+- Document downloads are authorised through the resident's own profile or an administrator's estate-scoped profile access and are audited.
+- No public storage URL is returned.
 
-## Property API contract
+API routes:
+- `POST /api/v1/residents/register/`
+- `GET /api/v1/residents/`
+- `GET /api/v1/residents/{id}/`
+- `POST /api/v1/residents/{id}/approve/`
+- `POST /api/v1/residents/{id}/reject/`
+- `POST /api/v1/residents/{id}/suspend/`
+- `GET /api/v1/residents/{id}/documents/`
+- `POST /api/v1/residents/{id}/documents/`
+- `GET /api/v1/residents/{id}/documents/{document_id}/download/`
 
-- `/api/v1/properties/`: list/retrieve estate-scoped locations; create/update for platform and estate administrators.
-- `/api/v1/residential-units/`: list/retrieve estate-scoped units; create/update for platform and estate administrators.
-- Property types: `street`, `block`, `building`, `compound`. A property may have a parent location, but the parent must belong to the same estate.
-- Unit identity is unique within its property by `(property, block, unit_number)`.
-- Property and unit deletion is not exposed. Use the inactive status to preserve references and history.
-- Resident/household memberships currently permit scoped reads of their estate's property inventory; writes remain administrator-only.
+### Resident-to-unit assignments
+- Owner, tenant and occupant relationship types.
+- Active/ended status, primary designation and start/end dates.
+- Only approved residents and active units/properties may be assigned.
+- Resident and unit must belong to the same estate.
+- Estate administrators may create/end assignments only within their estate.
+- Residents can read only their own assignments while their resident profile is approved.
+- Overlapping active assignments for the same resident/unit are rejected.
+- Overlapping primary assignments for the same resident are rejected.
+- Transactional overlap validation (with a resident-row lock) prevents overlapping primary assignment periods; a database check constraint enforces valid start/end dates.
+- Assignment creation and ending are audited; deletion is not exposed.
 
-## Remaining M3 work
+API routes:
+- `GET /api/v1/resident-unit-assignments/`
+- `GET /api/v1/resident-unit-assignments/{id}/`
+- `POST /api/v1/resident-unit-assignments/`
+- `POST /api/v1/resident-unit-assignments/{id}/end/`
 
-1. Resident profile and status model, linked to the existing custom user and an estate.
-2. Administrator-created resident registration and pending self-registration, with activation only after approval.
-3. Approval/rejection/suspension endpoints and audit events. Suspension must revoke the resident's active credentials once the access engine exists.
-4. Resident-to-unit assignments, including primary assignment and active date ranges; prevent overlapping or cross-estate assignments.
-5. Identity-document metadata and an encrypted storage adapter with private access and audit-on-view.
-6. CSV bulk import with dry-run validation, row-level errors, duplicate detection and an atomic/explicit commit step.
-7. OpenAPI descriptions, permission/IDOR tests, migration checks and full CI.
+### CSV bulk import
+- Estate administrators can preview or commit unit and resident CSV files.
+- Dry-run is the default and does not write records.
+- Commit revalidates the uploaded file and is atomic; any row error prevents partial import.
+- CSV is UTF-8, up to 5 MB and 1,000 data rows.
+- Unit import requires `property_id,unit_number`; `block` and `floor` are optional. Property must be active and belong to the selected estate.
+- Resident import requires `email,first_name,last_name`; `phone_number` is optional.
+- Duplicate rows, existing units, existing accounts, invalid emails/phone numbers, cross-estate property IDs and overlong values return row-level errors.
+- Imported residents receive inactive accounts with unusable passwords and pending profiles; no estate membership is created. An administrator must approve each resident, then issue a password-reset code through the M2 admin workflow.
 
-## Decisions and blockers
+API routes:
+- `POST /api/v1/imports/units/`
+- `POST /api/v1/imports/residents/`
 
-- **Q6 — estate reference verification remains open.** The documented working default is a management-issued estate reference plus administrator approval. Do not treat apartment details alone as proof of residency.
-- **Q8 — cloud provider remains open.** The client proposal requires private object storage with per-file encryption. Implement a storage interface and tests, but do not select a cloud provider or claim production document storage is ready until the estate chooses AWS, Azure or GCP.
-- **Identity document policy:** collect only the minimum required fields; never return raw document bytes in list/detail serializers; audit every authorised document view; use short-lived download access.
-- **Role policy:** estate administrators manage properties and residents. Estate managers remain read-only by default until configurable permissions are implemented. Residents can read only their own profile and assignments.
+Send multipart fields `estate_id`, `file`, and optional `dry_run`. Use `dry_run=true` for preview (default), then upload the same corrected file with `dry_run=false` to commit.
 
-## Verification required before merge
+## Security decisions and limitations
+- Estate code is a routing/reference value only, not proof of occupancy. It does not grant access. Administrator verification and approval remain mandatory.
+- Suspension is membership-scoped.
+- The configured Django default storage backend must be private and non-public in production. The application encrypts file contents before storage, but Q8 remains open for provider selection and deployment configuration.
+- Back up `FIELD_ENCRYPTION_KEY` securely. Loss of this key makes existing identity documents permanently unreadable; rotation requires a documented rewrapping procedure.
+- Do not log raw documents, passwords, wrapped keys or storage paths.
+- Estate managers remain read-only for resident/property administration until configurable permissions are implemented.
 
+## M3 verification result
+
+**CI status: passed**
+
+- Ruff lint and format: passed.
+- Django system check: passed.
+- Migration consistency: passed.
+- OpenAPI schema validation: passed.
+- Pytest: **130 passed, 28 warnings**.
+
+The warnings are from existing authentication/password-reset/2FA test cases; they did not fail the suite.
+
+## Deployment requirements (outside the M3 code milestone)
+
+1. Configure Django's default storage backend as private/non-public before production.
+2. Back up `FIELD_ENCRYPTION_KEY` securely. Loss of this key makes existing identity documents unreadable.
+3. Decide provider and document key-rotation, retention and malware-scanning policies under Q8.
+4. Define the estate's independent resident-verification evidence under Q6. Until then, administrator approval remains a manual verification gate.
+
+## Verification commands
 - `ruff check . && ruff format --check .`
 - `python manage.py check`
 - `python manage.py makemigrations --check --dry-run`
 - `python manage.py spectacular --file /tmp/schema.yml --validate --fail-on-warn`
 - `pytest --cov=apps --cov-report=term-missing`
-
-Do not mark M3 complete until the resident approval flow, assignment rules, import validation and encrypted document-storage path are implemented and tested.
