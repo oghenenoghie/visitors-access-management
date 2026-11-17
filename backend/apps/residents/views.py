@@ -1,7 +1,7 @@
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -67,7 +67,7 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def get_queryset(self):
         user = self.request.user
         queryset = ResidentProfile.objects.select_related("user", "estate", "reviewed_by")
-        if user.is_platform_admin:
+        if getattr(user, "is_platform_admin", False):
             return queryset
         readable_estate_ids = (
             EstateMembership.objects.active()
@@ -143,7 +143,17 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
             status=status.HTTP_201_CREATED,
         )
 
-    @extend_schema(responses={200: OpenApiTypes.BINARY})
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="document_id",
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.PATH,
+                description="Identity document UUID.",
+            )
+        ],
+        responses={200: OpenApiTypes.BINARY},
+    )
     @action(
         detail=True,
         methods=["get"],
