@@ -4,7 +4,8 @@ from rest_framework import serializers
 from apps.estates.models import Estate, EstateStatus
 from apps.users.models import User
 
-from .models import ResidentProfile
+from .document_serializers import ResidentDocumentUploadSerializer
+from .models import ResidentDocumentType, ResidentProfile
 
 
 class ResidentRegistrationSerializer(serializers.Serializer):
@@ -16,6 +17,10 @@ class ResidentRegistrationSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=150)
     last_name = serializers.CharField(max_length=150)
     phone_number = serializers.CharField(max_length=16, required=False, allow_blank=True)
+    identity_document_type = serializers.ChoiceField(
+        choices=ResidentDocumentType.choices, required=False, default=ResidentDocumentType.OTHER
+    )
+    identity_document = serializers.FileField(write_only=True, required=False)
 
     def validate_estate_code(self, value):
         estate = Estate.objects.filter(
@@ -32,7 +37,21 @@ class ResidentRegistrationSerializer(serializers.Serializer):
             raise serializers.ValidationError("An account with this email already exists.")
         return value
 
+    def validate_identity_document(self, uploaded_file):
+        document_type = self.initial_data.get(
+            "identity_document_type", ResidentDocumentType.OTHER
+        )
+        validator = ResidentDocumentUploadSerializer(
+            data={"document_type": document_type, "file": uploaded_file}
+        )
+        validator.is_valid(raise_exception=True)
+        return validator.validated_data["file"]
+
     def validate(self, attrs):
+        if "identity_document_type" in attrs and "identity_document" not in attrs:
+            raise serializers.ValidationError(
+                {"identity_document": "Upload a file when specifying a document type."}
+            )
         candidate = User(
             email=attrs["email"],
             first_name=attrs["first_name"],
