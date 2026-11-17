@@ -115,3 +115,47 @@ class ResidentUnitAssignment(BaseModel):
 
     def __str__(self):
         return f"{self.resident.user.email} → {self.unit}"
+
+
+class ResidentDocumentType(models.TextChoices):
+    NATIONAL_ID = "national_id", "National identity card"
+    PASSPORT = "passport", "Passport"
+    DRIVERS_LICENSE = "drivers_license", "Driver's licence"
+    OTHER = "other", "Other approved identity document"
+
+
+class ResidentDocumentStatus(models.TextChoices):
+    ACTIVE = "active", "Active"
+    ARCHIVED = "archived", "Archived"
+
+
+class ResidentIdentityDocument(BaseModel):
+    resident = models.ForeignKey(
+        ResidentProfile, on_delete=models.PROTECT, related_name="identity_documents"
+    )
+    document_type = models.CharField(max_length=24, choices=ResidentDocumentType.choices)
+    status = models.CharField(
+        max_length=20, choices=ResidentDocumentStatus.choices, default=ResidentDocumentStatus.ACTIVE
+    )
+    original_filename = models.CharField(max_length=255)
+    content_type = models.CharField(max_length=100)
+    size_bytes = models.PositiveIntegerField()
+    sha256 = models.CharField(max_length=64)
+    storage_key = models.CharField(max_length=500)
+    wrapped_data_key = models.TextField()
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="uploaded_resident_documents",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["resident", "status"], name="resident_docs_status"),
+        ]
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} — {self.resident.user.email}"
