@@ -166,3 +166,23 @@ def test_suspension_revokes_estate_membership_without_affecting_other_estates(
     assert profile.status == ResidentStatus.SUSPENDED
     assert own_membership.status == MembershipStatus.SUSPENDED
     assert profile_other_membership.status == MembershipStatus.ACTIVE
+
+
+
+def test_suspension_deactivates_account_when_no_other_active_estate_memberships(
+    api_client, auth, make_estate, make_member
+):
+    estate = make_estate()
+    admin = make_member(estate, EstateRole.ESTATE_ADMIN)
+    api_client.post(REGISTER, registration_payload(estate), format="json")
+    profile = ResidentProfile.objects.get(user__email="new.resident@example.com")
+    auth(admin)
+    api_client.post(f"{RESIDENTS}{profile.pk}/approve/", {}, format="json")
+
+    response = api_client.post(
+        f"{RESIDENTS}{profile.pk}/suspend/", {"note": "Access revoked"}, format="json"
+    )
+
+    assert response.status_code == 200
+    profile.user.refresh_from_db()
+    assert profile.user.is_active is False
