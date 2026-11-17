@@ -67,6 +67,8 @@ class ResidentViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     def get_queryset(self):
         user = self.request.user
         queryset = ResidentProfile.objects.select_related("user", "estate", "reviewed_by")
+        if not getattr(user, "is_authenticated", False):
+            return queryset.none()
         if getattr(user, "is_platform_admin", False):
             return queryset
         readable_estate_ids = (
