@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 from apps.common.permissions import has_estate_role
 from apps.estates.models import EstateRole
 
-from .models import AccessEvent, GateDevice, VisitorInvitation
-from .permissions import CanOverrideAccess, GateRolePermission
+from .models import AccessEvent, VisitorInvitation
+from .permissions import CanOverrideAccess, GateAttemptThrottle, GateRolePermission
 from .serializers import (
     AccessEventSerializer,
     CredentialIssuedSerializer,
@@ -80,6 +80,7 @@ class InvitationCancelView(APIView):
 
 
 class GateVerifyView(APIView):
+    throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
     def post(self, request):
@@ -97,6 +98,7 @@ class GateVerifyView(APIView):
 
 
 class GateCheckInView(APIView):
+    throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
     def post(self, request):
