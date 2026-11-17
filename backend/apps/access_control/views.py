@@ -65,6 +65,26 @@ class InvitationListCreateView(generics.ListCreateAPIView):
         return Response(payload, status=status.HTTP_201_CREATED)
 
 
+
+class InvitationDetailView(generics.RetrieveAPIView):
+    serializer_class = VisitorInvitationSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = VisitorInvitation.objects.for_user(user).select_related(
+            "visitor", "resident", "unit", "estate", "created_by"
+        )
+        if user.is_platform_admin:
+            return queryset
+        if has_estate_role(user, [EstateRole.ESTATE_ADMIN]):
+            estate_ids = user.memberships.filter(
+                role=EstateRole.ESTATE_ADMIN, status="active", estate__status="active"
+            ).values("estate_id")
+            return queryset.filter(estate_id__in=estate_ids)
+        return queryset.filter(created_by=user)
+
+
 class InvitationCancelView(APIView):
     permission_classes = [IsAuthenticated]
 
