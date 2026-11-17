@@ -181,9 +181,15 @@ def _lookup_credential(value):
 
 def _validation_result(credential, now):
     invitation = credential.invitation
-    if credential.status == CredentialStatus.REVOKED or invitation.status == InvitationStatus.CANCELLED:
+    if (
+        credential.status == CredentialStatus.REVOKED
+        or invitation.status == InvitationStatus.CANCELLED
+    ):
         return "REVOKED"
-    if credential.status == CredentialStatus.CONSUMED and invitation.access_type == AccessType.SINGLE_USE:
+    if (
+        credential.status == CredentialStatus.CONSUMED
+        and invitation.access_type == AccessType.SINGLE_USE
+    ):
         return "ALREADY_USED"
     if invitation.status != InvitationStatus.ACTIVE:
         return "CANCELLED"
@@ -285,7 +291,10 @@ def check_in(*, value, gate, actor, request):
         )
         return event
     credential.uses_count += 1
-    if invitation.access_type == AccessType.SINGLE_USE or credential.uses_count >= invitation.max_uses:
+    if (
+        invitation.access_type == AccessType.SINGLE_USE
+        or credential.uses_count >= invitation.max_uses
+    ):
         credential.status = CredentialStatus.CONSUMED
     credential.save(update_fields=["uses_count", "status", "updated_at"])
     event = AccessEvent.objects.create(
