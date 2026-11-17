@@ -1,6 +1,7 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
+from apps.estates.models import EstateMembership
 from apps.properties.models import Property, ResidentialUnit
 from apps.residents.models import ResidentProfile, ResidentStatus
 
@@ -126,6 +127,7 @@ def test_resident_import_creates_pending_inactive_profiles(
     profile.user.refresh_from_db()
     assert profile.status == ResidentStatus.PENDING
     assert profile.user.is_active is False
+    assert profile.user.has_usable_password() is False
     assert not EstateMembership.objects.filter(user=profile.user, estate=estate).exists()
 
 
