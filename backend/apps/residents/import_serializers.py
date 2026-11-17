@@ -16,3 +16,13 @@ class BulkImportSerializer(serializers.Serializer):
         if not uploaded_file.name.lower().endswith(".csv"):
             raise serializers.ValidationError("Upload a .csv file.")
         return uploaded_file
+
+
+class BulkImportResultSerializer(serializers.Serializer):
+    import_type = serializers.ChoiceField(choices=["units", "residents"])
+    estate_id = serializers.UUIDField()
+    dry_run = serializers.BooleanField()
+    valid_rows = serializers.IntegerField()
+    error_rows = serializers.IntegerField()
+    errors = serializers.ListField(child=serializers.JSONField())
+    committed = serializers.BooleanField()
