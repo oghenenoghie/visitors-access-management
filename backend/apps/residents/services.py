@@ -4,11 +4,10 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.audit_logs.services import record
-from .document_storage import store_identity_document
-from .models import ResidentDocumentType
 from apps.estates.models import EstateMembership, EstateRole, MembershipStatus
 
-from .models import ResidentProfile, ResidentStatus
+from .document_storage import store_identity_document
+from .models import ResidentDocumentType, ResidentProfile, ResidentStatus
 
 User = get_user_model()
 
