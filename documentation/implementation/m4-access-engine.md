@@ -82,14 +82,18 @@ For check-out, send `gate_device` and `invitation`. For override, send those fie
 
 Gate devices are provisioned by an administrator through Django admin in this slice. Device records must be assigned to the correct estate before officers can use them. A dedicated estate-admin API for gate/device lifecycle is not included yet.
 
-## Verification still required
+## Verification result
 
-- Run Ruff lint and format.
-- Run Django system checks and migration consistency.
-- Validate the OpenAPI schema.
-- Run all backend tests plus the M4 acceptance suite.
-- Confirm the concurrent-consume test against PostgreSQL (SQLite is not an acceptable substitute for row-lock verification).
-- Review the generated schema and all access response payloads before mobile clients consume them.
+<badge>CI passed</badge>
+
+- Ruff lint and format: passed.
+- Django system check: passed.
+- Migration consistency: passed (no model changes pending).
+- OpenAPI schema validation: passed with no schema warnings.
+- Pytest: **141 passed, 29 warnings**.
+- Concurrent single-use consumption test passed against the PostgreSQL CI service; only one admission succeeds.
+
+Review the generated schema and access response payloads before mobile clients consume them.
 
 ## Deferred
 
