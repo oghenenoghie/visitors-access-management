@@ -120,6 +120,7 @@ def test_duplicate_unit_location_is_rejected(make_estate, make_member):
     with pytest.raises(IntegrityError), transaction.atomic():
         ResidentialUnit.objects.create(property=parent, unit_number="12", block="A")
 
+
 def test_property_cannot_be_moved_to_another_estate(api_client, auth, make_estate, make_member):
     from apps.properties.models import Property
 
