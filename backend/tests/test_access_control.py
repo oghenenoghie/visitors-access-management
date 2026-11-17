@@ -66,7 +66,7 @@ def create_pass(context, *, access_type="single_use", max_uses=None):
         "visitor_name": "Ada Visitor",
         "visitor_phone": "+2348012345678",
         "unit": str(context["unit"].pk),
-        "valid_from": (now + timedelta(minutes=1)).isoformat(),
+        "valid_from": (now - timedelta(seconds=30)).isoformat(),
         "valid_until": (now + timedelta(hours=2)).isoformat(),
         "access_type": access_type,
     }
@@ -103,9 +103,12 @@ def test_expired_visitor_is_rejected_and_logged(access_context):
 
     issued = create_pass(access_context)
     invitation = VisitorInvitation.objects.get(pk=issued["invitation"]["id"])
-    past = timezone.now() - timedelta(minutes=1)
-    VisitorInvitation.objects.filter(pk=invitation.pk).update(valid_until=past)
-    AccessCredential.objects.filter(invitation=invitation).update(expires_at=past)
+    past_until = timezone.now() - timedelta(minutes=1)
+    past_from = past_until - timedelta(minutes=1)
+    VisitorInvitation.objects.filter(pk=invitation.pk).update(
+        valid_from=past_from, valid_until=past_until
+    )
+    AccessCredential.objects.filter(invitation=invitation).update(expires_at=past_until)
 
     response = gate_client(access_context["officer"]).post(
         API + "gate/verify/",
