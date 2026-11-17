@@ -4,6 +4,8 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from apps.audit_logs.services import record
+from .document_storage import store_identity_document
+from .models import ResidentDocumentType
 from apps.estates.models import EstateMembership, EstateRole, MembershipStatus
 
 from .models import ResidentProfile, ResidentStatus
@@ -14,6 +16,8 @@ User = get_user_model()
 @transaction.atomic
 def register_resident(*, data, request):
     estate = data.pop("estate")
+    identity_document = data.pop("identity_document", None)
+    document_type = data.pop("identity_document_type", ResidentDocumentType.OTHER)
     user = User.objects.create_user(
         email=data["email"],
         password=data["password"],
@@ -23,6 +27,14 @@ def register_resident(*, data, request):
         is_active=False,
     )
     profile = ResidentProfile.objects.create(user=user, estate=estate)
+    if identity_document:
+        store_identity_document(
+            resident=profile,
+            uploaded_file=identity_document,
+            document_type=document_type,
+            uploaded_by=user,
+            request=request,
+        )
     record(
         action="resident.registration_submitted",
         actor=user,
