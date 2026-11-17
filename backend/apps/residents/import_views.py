@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.common.permissions import has_estate_role
-from apps.estates.models import Estate, EstateRole
+from apps.estates.models import Estate, EstateRole, EstateStatus
 
 from .bulk_import import process_bulk_import
 from .import_serializers import BulkImportResultSerializer, BulkImportSerializer
@@ -29,7 +29,9 @@ class BulkImportView(APIView):
             request.user, [EstateRole.ESTATE_ADMIN], estate_id=estate_id
         ):
             raise NotFound()
-        estate = get_object_or_404(Estate, pk=estate_id)
+        estate = get_object_or_404(
+            Estate, pk=estate_id, status=EstateStatus.ACTIVE
+        )
         result = process_bulk_import(
             estate=estate,
             import_type=import_type,
