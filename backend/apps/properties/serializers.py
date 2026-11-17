@@ -8,7 +8,11 @@ from .models import Property, ResidentialUnit
 class PropertySerializer(serializers.ModelSerializer):
     estate_id = serializers.PrimaryKeyRelatedField(source="estate", queryset=Estate.objects.all())
     parent_id = serializers.PrimaryKeyRelatedField(
-        source="parent", queryset=Property.objects.all(), allow_null=True, required=False, default=None
+        source="parent",
+        queryset=Property.objects.all(),
+        allow_null=True,
+        required=False,
+        default=None,
     )
 
     class Meta:
