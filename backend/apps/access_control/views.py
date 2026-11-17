@@ -161,8 +161,16 @@ class GateActivityView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, GateRolePermission]
 
     def get_queryset(self):
-        return AccessEvent.objects.filter(
-            estate_id__in=self.request.user.memberships.filter(
-                role__in=GateRolePermission.allowed_roles, status="active"
-            ).values("estate_id")
-        ).select_related("invitation__visitor", "gate_device").order_by("-occurred_at")
+        user = self.request.user
+        queryset = AccessEvent.objects.all()
+        if not user.is_platform_admin:
+            queryset = queryset.filter(
+                estate_id__in=user.memberships.filter(
+                    role__in=GateRolePermission.allowed_roles,
+                    status="active",
+                    estate__status="active",
+                ).values("estate_id")
+            )
+        return queryset.select_related("invitation__visitor", "gate_device").order_by(
+            "-occurred_at"
+        )
