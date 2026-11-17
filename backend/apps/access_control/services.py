@@ -257,7 +257,7 @@ def check_in(*, value, gate, actor, request):
             new_values={"result": "INVALID", "gate_id": str(gate.pk)}, request=request,
         )
         return event
-    credential = AccessCredential.objects.select_for_update().select_related(
+    credential = AccessCredential.objects.select_for_update(of=("self",)).select_related(
         "invitation__visitor", "invitation__estate", "invitation__unit"
     ).get(pk=credential.pk)
     invitation = VisitorInvitation.objects.select_for_update().get(pk=credential.invitation_id)
