@@ -2,12 +2,12 @@ import csv
 import io
 import uuid
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import EmailValidator, RegexValidator
 from django.db import transaction
 from rest_framework.exceptions import ValidationError
 
 from apps.audit_logs.services import record
-from apps.estates.models import Estate
 from apps.properties.models import Property, PropertyStatus, ResidentialUnit
 from apps.users.models import User
 
@@ -37,6 +37,10 @@ def _parse_csv(uploaded_file, expected_headers):
     for row_number, row in enumerate(reader, start=2):
         if row_number - 1 > MAX_IMPORT_ROWS:
             raise ValidationError({"file": f"CSV cannot contain more than {MAX_IMPORT_ROWS} data rows."})
+        if None in row:
+            raise ValidationError(
+                {"file": f"Row {row_number} contains more values than the CSV headings."}
+            )
         if not any((value or "").strip() for value in row.values()):
             continue
         rows.append((row_number, {key: (value or "").strip() for key, value in row.items()}))
@@ -61,9 +65,14 @@ def _validate_units(estate, uploaded_file):
                 {"row": row_number, "field": "property_id", "message": "Property is not active in this estate."}
             )
             continue
-        unit_number = row["unit_number"][:40]
-        block = row.get("block", "")[:40]
-        floor = row.get("floor", "")[:30]
+        unit_number = row["unit_number"]
+        block = row.get("block", "")
+        floor = row.get("floor", "")
+        if len(unit_number) > 40 or len(block) > 40 or len(floor) > 30:
+            errors.append(
+                {"row": row_number, "field": "unit_number", "message": "Unit number, block or floor exceeds its allowed length."}
+            )
+            continue
         if not unit_number:
             errors.append({"row": row_number, "field": "unit_number", "message": "Unit number is required."})
             continue
@@ -94,13 +103,18 @@ def _validate_residents(estate, uploaded_file):
     seen = set()
     for row_number, row in rows:
         email = User.objects.normalize_email(row["email"]).lower()
-        first_name = row["first_name"][:150]
-        last_name = row["last_name"][:150]
-        phone = row.get("phone_number", "")[:16]
+        first_name = row["first_name"]
+        last_name = row["last_name"]
+        phone = row.get("phone_number", "")
         try:
             email_validator(email)
-        except Exception:
+        except DjangoValidationError:
             errors.append({"row": row_number, "field": "email", "message": "Enter a valid email address."})
+            continue
+        if len(email) > 254 or len(first_name) > 150 or len(last_name) > 150 or len(phone) > 16:
+            errors.append(
+                {"row": row_number, "field": "email", "message": "A field exceeds its maximum allowed length."}
+            )
             continue
         if not first_name or not last_name:
             errors.append({"row": row_number, "field": "name", "message": "First and last name are required."})
@@ -111,7 +125,7 @@ def _validate_residents(estate, uploaded_file):
         if phone:
             try:
                 phone_validator(phone)
-            except Exception:
+            except DjangoValidationError:
                 errors.append({"row": row_number, "field": "phone_number", "message": "Enter a valid phone number."})
                 continue
         seen.add(email.casefold())
