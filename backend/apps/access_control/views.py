@@ -94,9 +94,13 @@ class InvitationCancelView(APIView):
     @extend_schema(request=None, responses={200: VisitorInvitationSerializer})
     def post(self, request, pk):
         invitation = get_object_or_404(VisitorInvitation.objects.for_user(request.user), pk=pk)
-        if invitation.created_by_id != request.user.pk and not has_estate_role(
-            request.user, [EstateRole.ESTATE_ADMIN], estate_id=invitation.estate_id
-        ) and not request.user.is_platform_admin:
+        if (
+            invitation.created_by_id != request.user.pk
+            and not has_estate_role(
+                request.user, [EstateRole.ESTATE_ADMIN], estate_id=invitation.estate_id
+            )
+            and not request.user.is_platform_admin
+        ):
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied(
                 "Only the creator or an estate administrator may cancel this invitation."
@@ -116,12 +120,15 @@ class GateVerifyView(APIView):
         serializer = GateVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         gate = _gate_for_actor(
-            actor=request.user, gate_id=serializer.validated_data["gate_device"],
+            actor=request.user,
+            gate_id=serializer.validated_data["gate_device"],
             allowed_roles=GateRolePermission.allowed_roles,
         )
         result, _ = verify_credential(
-            value=serializer.validated_data["credential"], gate=gate,
-            actor=request.user, request=request,
+            value=serializer.validated_data["credential"],
+            gate=gate,
+            actor=request.user,
+            request=request,
         )
         return Response(result)
 
@@ -162,7 +169,10 @@ class GateCheckOutView(APIView):
             estate=gate.estate,
         )
         event = check_out(
-            invitation=invitation, gate=gate, actor=request.user, request=request
+            invitation=invitation,
+            gate=gate,
+            actor=request.user,
+            request=request,
         )
         return Response(AccessEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
@@ -184,8 +194,11 @@ class GateOverrideView(APIView):
             estate=gate.estate,
         )
         event = manual_override(
-            invitation=invitation, gate=gate, actor=request.user,
-            reason=serializer.validated_data["reason"], request=request,
+            invitation=invitation,
+            gate=gate,
+            actor=request.user,
+            reason=serializer.validated_data["reason"],
+            request=request,
         )
         return Response(AccessEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
