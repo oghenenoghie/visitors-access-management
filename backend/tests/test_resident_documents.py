@@ -72,9 +72,7 @@ def test_estate_admin_can_list_and_download_identity_document(
     listed = api_client.get(f"{RESIDENTS}{profile.pk}/documents/")
     assert listed.status_code == 200
     assert listed.json()[0]["id"] == str(document.pk)
-    downloaded = api_client.get(
-        f"{RESIDENTS}{profile.pk}/documents/{document.pk}/download/"
-    )
+    downloaded = api_client.get(f"{RESIDENTS}{profile.pk}/documents/{document.pk}/download/")
     assert downloaded.status_code == 200
     assert b"".join(downloaded.streaming_content) == raw
     assert AuditLog.objects.filter(
