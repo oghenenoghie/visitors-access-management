@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from drf_spectacular.utils import extend_schema
 
 from apps.common.permissions import has_estate_role
 from apps.estates.models import EstateRole
@@ -15,8 +15,8 @@ from .serializers import (
     GateCheckInSerializer,
     GateCheckOutSerializer,
     GateOverrideSerializer,
-    GateVerifySerializer,
     GateVerifyResponseSerializer,
+    GateVerifySerializer,
     InvitationCreateSerializer,
     VisitorInvitationSerializer,
 )
@@ -109,7 +109,9 @@ class GateVerifyView(APIView):
     throttle_classes = [GateAttemptThrottle]
     permission_classes = [IsAuthenticated, GateRolePermission]
 
-    @extend_schema(request=GateVerifySerializer, responses={200: GateVerifyResponseSerializer})
+    @extend_schema(
+        request=GateVerifySerializer, responses={200: GateVerifyResponseSerializer}
+    )
     def post(self, request):
         serializer = GateVerifySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
