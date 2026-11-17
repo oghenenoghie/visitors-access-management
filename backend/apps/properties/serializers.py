@@ -29,7 +29,9 @@ class PropertySerializer(serializers.ModelSerializer):
             parent_id = attrs.pop("parent_id")
             parent = Property.objects.filter(pk=parent_id).first() if parent_id else None
             if parent_id and parent is None:
-                raise serializers.ValidationError({"parent_id": "The parent property does not exist."})
+                raise serializers.ValidationError(
+                    {"parent_id": "The parent property does not exist."}
+                )
             attrs["parent"] = parent
 
         estate = attrs.get("estate", getattr(self.instance, "estate", None))
