@@ -24,6 +24,8 @@ class PropertySerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         estate = attrs.get("estate", getattr(self.instance, "estate", None))
         parent = attrs.get("parent", getattr(self.instance, "parent", None))
+        if parent and self.instance and parent.pk == self.instance.pk:
+            raise serializers.ValidationError({"parent_id": "A property cannot be its own parent."})
         if parent and estate and parent.estate_id != estate.id:
             raise serializers.ValidationError(
                 {"parent_id": "The parent property must belong to the selected estate."}
