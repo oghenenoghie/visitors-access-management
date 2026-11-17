@@ -2,8 +2,7 @@ import pytest
 
 from apps.estates.models import EstateRole
 from apps.properties.models import Property, ResidentialUnit
-from apps.residents.assignments import AssignmentStatus
-from apps.residents.models import ResidentProfile, ResidentStatus
+from apps.residents.models import AssignmentStatus, ResidentProfile
 
 pytestmark = pytest.mark.django_db
 
