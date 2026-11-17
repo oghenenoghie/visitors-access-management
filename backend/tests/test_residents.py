@@ -117,8 +117,11 @@ def test_resident_can_only_retrieve_own_profile(
     api_client, auth, make_estate, make_member
 ):
     estate = make_estate()
+    admin = make_member(estate, EstateRole.ESTATE_ADMIN)
     api_client.post(REGISTER, registration_payload(estate), format="json")
     profile = ResidentProfile.objects.get(user__email="new.resident@example.com")
+    auth(admin)
+    api_client.post(f"{RESIDENTS}{profile.pk}/approve/", {}, format="json")
     auth(profile.user)
 
     own = api_client.get(f"{RESIDENTS}{profile.pk}/")
