@@ -25,8 +25,6 @@ class CanAccessResidentDocuments(BasePermission):
         user = request.user
         if user.is_platform_admin:
             return True
-        if has_estate_role(
-            user, [EstateRole.ESTATE_ADMIN], estate_id=resident.estate_id
-        ):
+        if has_estate_role(user, [EstateRole.ESTATE_ADMIN], estate_id=resident.estate_id):
             return True
         return resident.user_id == user.pk and resident.status == "approved"
