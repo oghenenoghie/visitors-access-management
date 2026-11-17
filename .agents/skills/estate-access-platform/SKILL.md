@@ -1185,6 +1185,12 @@ GET    /api/v1/residents/{id}/
 POST   /api/v1/residents/{id}/approve/
 POST   /api/v1/residents/{id}/reject/
 POST   /api/v1/residents/{id}/suspend/
+GET    /api/v1/residents/{id}/documents/
+POST   /api/v1/residents/{id}/documents/
+GET    /api/v1/residents/{id}/documents/{document_id}/download/
+
+POST   /api/v1/imports/units/
+POST   /api/v1/imports/residents/
 
 GET    /api/v1/resident-unit-assignments/
 GET    /api/v1/resident-unit-assignments/{id}/
