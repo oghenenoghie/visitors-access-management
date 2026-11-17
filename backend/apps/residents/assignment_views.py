@@ -1,11 +1,12 @@
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.common.permissions import administered_estate_ids, has_estate_role
 from apps.estates.models import EstateRole
+from apps.properties.models import ResidentialUnit
 
 from .assignment_serializers import (
     AssignmentEndSerializer,
@@ -32,6 +33,20 @@ class ResidentUnitAssignmentViewSet(
         if self.action == "create":
             return ResidentUnitAssignmentCreateSerializer
         return ResidentUnitAssignmentSerializer
+
+    def get_serializer(self, *args, **kwargs):
+        serializer = super().get_serializer(*args, **kwargs)
+        if self.action == "create":
+            user = self.request.user
+            if not user.is_platform_admin:
+                estate_ids = administered_estate_ids(user)
+                serializer.fields["resident_id"].queryset = ResidentProfile.objects.filter(
+                    estate_id__in=estate_ids
+                )
+                serializer.fields["unit_id"].queryset = ResidentialUnit.objects.filter(
+                    property__estate_id__in=estate_ids
+                )
+        return serializer
 
     def get_permissions(self):
         if self.action in ("create", "end"):
