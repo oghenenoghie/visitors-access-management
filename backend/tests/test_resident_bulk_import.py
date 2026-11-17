@@ -42,9 +42,7 @@ def test_unit_import_dry_run_does_not_write_records(api_client, auth, make_estat
 def test_unit_import_commit_creates_units_atomically(api_client, auth, make_estate, make_member):
     estate = make_estate()
     admin = make_member(estate, "estate_admin")
-    property_record = Property.objects.create(
-        estate=estate, name="Block A", property_type="block"
-    )
+    property_record = Property.objects.create(estate=estate, name="Block A", property_type="block")
     auth(admin)
 
     response = api_client.post(
@@ -73,9 +71,7 @@ def test_unit_import_with_errors_does_not_partially_commit(
 ):
     estate = make_estate()
     admin = make_member(estate, "estate_admin")
-    property_record = Property.objects.create(
-        estate=estate, name="Block A", property_type="block"
-    )
+    property_record = Property.objects.create(estate=estate, name="Block A", property_type="block")
     ResidentialUnit.objects.create(property=property_record, unit_number="A-101")
     auth(admin)
 
