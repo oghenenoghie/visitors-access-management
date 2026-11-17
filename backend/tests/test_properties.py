@@ -20,7 +20,7 @@ def test_estate_admin_can_create_property_and_unit(api_client, auth, make_estate
         {"estate_id": str(estate.pk), "name": "Palm Avenue", "property_type": "street"},
         format="json",
     )
-    assert street.status_code == 201
+    assert street.status_code == 201, street.data
     street_id = street.json()["id"]
 
     unit = api_client.post(
