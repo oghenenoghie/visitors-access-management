@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.estates",
     "apps.properties",
+    "apps.residents",
     "apps.audit_logs",
     "apps.authentication",
 ]
@@ -134,6 +135,7 @@ REST_FRAMEWORK = {
         "login": "10/min",
         "two_factor": "10/min",
         "password_reset": "5/min",
+        "resident_registration": "5/hour",
     },
     # Client IP is the socket address unless exactly one trusted proxy sits in front.
     "NUM_PROXIES": 1 if BEHIND_PROXY else 0,
