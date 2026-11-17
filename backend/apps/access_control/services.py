@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -91,13 +91,23 @@ def create_invitation(*, actor, data, request):
         access_type=access_type,
         max_uses=max_uses,
     )
-    qr_token, access_code, qr_hash, code_hash = issue_secret()
-    credential = AccessCredential.objects.create(
-        invitation=invitation,
-        qr_token_hash=qr_hash,
-        access_code_hash=code_hash,
-        expires_at=valid_until,
-    )
+    credential = None
+    for _attempt in range(5):
+        qr_token, access_code, qr_hash, code_hash = issue_secret()
+        try:
+            # Isolate a unique-hash collision in a savepoint so a retry remains possible.
+            with transaction.atomic():
+                credential = AccessCredential.objects.create(
+                    invitation=invitation,
+                    qr_token_hash=qr_hash,
+                    access_code_hash=code_hash,
+                    expires_at=valid_until,
+                )
+            break
+        except IntegrityError:
+            continue
+    if credential is None:
+        raise ValidationError({"credential": "Unable to issue a unique credential. Retry."})
     record(
         action="invitation.created",
         actor=actor,
