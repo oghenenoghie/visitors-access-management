@@ -1221,12 +1221,15 @@ POST   /api/v1/invitations/
 GET    /api/v1/invitations/{id}/
 POST   /api/v1/invitations/{id}/cancel/
 POST   /api/v1/invitations/{id}/credentials/
+POST   /api/v1/invitations/{id}/cancel/
 ```
 
 ## Gate operations
 
 ```text
 POST   /api/v1/gate/verify/
+POST   /api/v1/gate/override/
+GET    /api/v1/gate/activity/
 POST   /api/v1/gate/check-in/
 POST   /api/v1/gate/check-out/
 GET    /api/v1/gate/visitors-inside/
