@@ -41,10 +41,11 @@ class Property(BaseModel):
         ordering = ["name"]
         constraints = [
             models.UniqueConstraint(
-                fields=["estate", "parent", "name"], name="properties_parent_name_unique"
+                fields=["estate", "parent", "name"], name="properties_parent_name_unique",
+                nulls_distinct=False,
             )
         ]
-        indexes = [models.Index(fields=["estate", "property_type", "status"])]
+        indexes = [models.Index(fields=["estate", "property_type", "status"], name="properties_estate_type_status")]
 
     def clean(self):
         if self.parent_id and self.parent.estate_id != self.estate_id:
@@ -80,7 +81,7 @@ class ResidentialUnit(BaseModel):
                 fields=["property", "block", "unit_number"], name="properties_unit_location_unique"
             )
         ]
-        indexes = [models.Index(fields=["property", "status"])]
+        indexes = [models.Index(fields=["property", "status"], name="properties_unit_status")]
 
     def __str__(self):
         return f"{self.property.name} / {self.unit_number}"
