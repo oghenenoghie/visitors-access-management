@@ -14,7 +14,7 @@ from .assignment_serializers import (
     ResidentUnitAssignmentSerializer,
 )
 from .assignment_services import create_assignment, end_assignment
-from .models import ResidentProfile, ResidentUnitAssignment
+from .models import ResidentProfile, ResidentStatus, ResidentUnitAssignment
 from .permissions import CanManageResidents
 
 
@@ -64,7 +64,10 @@ class ResidentUnitAssignmentViewSet(
             return queryset.filter(
                 resident__estate_id__in=administered_estate_ids(user)
             )
-        return queryset.filter(resident__user=user)
+        return queryset.filter(
+            resident__user=user,
+            resident__status=ResidentStatus.APPROVED,
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
