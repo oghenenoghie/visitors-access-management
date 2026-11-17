@@ -11,7 +11,6 @@ from .models import AccessEvent, VisitorInvitation
 from .permissions import CanOverrideAccess, GateAttemptThrottle, GateRolePermission
 from .serializers import (
     AccessEventSerializer,
-    CredentialIssuedSerializer,
     GateCheckInSerializer,
     GateCheckOutSerializer,
     GateOverrideSerializer,
@@ -48,7 +47,9 @@ class InvitationListCreateView(generics.ListCreateAPIView):
         return qs.filter(created_by=user)
 
     def get_serializer_class(self):
-        return InvitationCreateSerializer if self.request.method == "POST" else VisitorInvitationSerializer
+        if self.request.method == "POST":
+            return InvitationCreateSerializer
+        return VisitorInvitationSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -94,7 +95,9 @@ class InvitationCancelView(APIView):
             request.user, [EstateRole.ESTATE_ADMIN], estate_id=invitation.estate_id
         ) and not request.user.is_platform_admin:
             from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Only the creator or an estate administrator may cancel this invitation.")
+            raise PermissionDenied(
+                "Only the creator or an estate administrator may cancel this invitation."
+            )
         invitation = cancel_invitation(invitation=invitation, actor=request.user, request=request)
         return Response(VisitorInvitationSerializer(invitation).data)
 
