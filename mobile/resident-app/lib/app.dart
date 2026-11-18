@@ -1,4 +1,4 @@
-import 'dart:async';
+Z import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -51,8 +51,8 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
           builder: (context, state) => const VisitorHistoryScreen()),
       GoRoute(
           path: '/notifications',
-          builder: (context, state) => NotificationInboxScreen(
-              api: ref.read(apiClientProvider).dio)),
+          builder: (context, state) =>
+              NotificationInboxScreen(api: ref.read(apiClientProvider).dio)),
       GoRoute(
           path: '/invitations/new',
           builder: (context, state) => const CreateInvitationScreen()),
