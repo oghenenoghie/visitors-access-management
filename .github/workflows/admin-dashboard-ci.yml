@@ -45,6 +45,25 @@ jobs:
             }));
           }
           NODE
+      - name: Report production dependency vulnerabilities
+        if: always()
+        run: |
+          npm audit --omit=dev --json > "$RUNNER_TEMP/npm-audit-production.json" || true
+          node - "$RUNNER_TEMP/npm-audit-production.json" <<'NODE'
+          const fs = require("node:fs");
+          const report = JSON.parse(fs.readFileSync(process.argv[2], "utf8"));
+          const counts = report.metadata?.vulnerabilities ?? {};
+          console.log("Dashboard production dependency audit:", JSON.stringify(counts));
+          for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+            console.log(JSON.stringify({
+              package: name,
+              severity: item.severity,
+              direct: item.isDirect,
+              range: item.range,
+              fixAvailable: item.fixAvailable,
+            }));
+          }
+          NODE
       - run: npm run lint
       - run: npm run build
       - run: npx playwright install --with-deps chromium
