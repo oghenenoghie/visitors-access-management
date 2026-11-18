@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
@@ -23,7 +24,7 @@ class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        notification = generics.get_object_or_404(
+        notification = get_object_or_404(
             Notification.objects.filter(user=request.user), pk=pk
         )
         if notification.read_at is None:
