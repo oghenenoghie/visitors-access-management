@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from apps.common.permissions import IsAdministrator, administrable_users
 from apps.users.models import User
@@ -15,6 +16,7 @@ from .serializers import (
     ChallengeCodeSerializer,
     ChallengeSerializer,
     EnrolmentResponseSerializer,
+    LockedTokenRefreshSerializer,
     LoginSerializer,
     LogoutSerializer,
     MeSerializer,
@@ -42,6 +44,12 @@ class LoginView(_PublicView):
             request=request,
         )
         return Response(result)
+
+
+class LockedTokenRefreshView(TokenRefreshView):
+    """Refresh with database-backed serialization shared by every API worker."""
+
+    serializer_class = LockedTokenRefreshSerializer
 
 
 class TwoFactorSetupView(_PublicView):
