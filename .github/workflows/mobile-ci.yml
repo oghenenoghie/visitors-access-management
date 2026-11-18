@@ -31,6 +31,8 @@ jobs:
           cache: true
       - run: flutter create --platforms=android --org com.estateaccess .
       - run: flutter pub get
+      - name: Apply supported Dart migrations and lint fixes
+        run: dart fix --apply
       - name: Format Dart sources
         run: dart format lib test
       - name: Commit formatter output on same-repository pull requests
