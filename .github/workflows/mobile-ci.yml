@@ -23,7 +23,9 @@ jobs:
         with:
           channel: stable
           cache: true
+      - run: flutter create --platforms=android --org com.estateaccess .
       - run: flutter pub get
       - run: dart format --output=none --set-exit-if-changed .
       - run: flutter analyze
       - run: flutter test
+      - run: flutter build apk --debug
