@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'push_notification_service.dart';
+import 'notification_inbox_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -385,7 +386,7 @@ class _GateHomeState extends State<GateHome> {
   void initState() {
     super.initState();
     PushNotificationService.instance.setTapHandler((resourceId) {
-      if (mounted) setState(() => _tab = 1);
+      if (mounted) setState(() => _tab = 2);
     });
   }
 
@@ -409,6 +410,7 @@ class _GateHomeState extends State<GateHome> {
       body: IndexedStack(index: _tab, children: [
         GateOperations(onError: (message) => setState(() => _error = message)),
         const GateActivity(),
+        GateNotificationInboxScreen(api: _api.dio),
       ]),
       bottomNavigationBar: NavigationBar(
           selectedIndex: _tab,
@@ -417,6 +419,8 @@ class _GateHomeState extends State<GateHome> {
             NavigationDestination(
                 icon: Icon(Icons.qr_code_scanner), label: 'Verify'),
             NavigationDestination(icon: Icon(Icons.history), label: 'Activity'),
+            NavigationDestination(
+                icon: Icon(Icons.notifications_outlined), label: 'Inbox'),
           ]),
       floatingActionButton: _error == null
           ? null

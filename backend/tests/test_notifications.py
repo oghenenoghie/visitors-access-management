@@ -97,3 +97,43 @@ def test_push_device_registration_requires_authentication(api_client):
         format="json",
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_unread_count_is_authenticated_and_scoped_to_current_user(api_client, make_user):
+    owner = make_user()
+    other = make_user()
+    Notification.objects.create(
+        user=owner,
+        notification_type="visitor.checked_in",
+        title="Visitor arrived",
+        body="Your visitor has entered the estate.",
+    )
+    read_notification = Notification.objects.create(
+        user=owner,
+        notification_type="visitor.checked_out",
+        title="Visitor left",
+        body="Your visitor has left the estate.",
+        read_at=timezone.now(),
+    )
+    Notification.objects.create(
+        user=other,
+        notification_type="visitor.checked_in",
+        title="Another visitor arrived",
+        body="A visitor entered another resident's estate.",
+    )
+
+    response = api_client.get(API + "notifications/unread-count/")
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+    api_client.force_authenticate(owner)
+    response = api_client.get(API + "notifications/unread-count/")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"unread_count": 1}
+
+    read_notification.refresh_from_db()
+    assert read_notification.read_at is not None
+
+    api_client.force_authenticate(other)
+    response = api_client.get(API + "notifications/unread-count/")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.data == {"unread_count": 1}

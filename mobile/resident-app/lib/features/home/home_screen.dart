@@ -77,6 +77,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: const Text('Estate Access'),
         actions: [
           IconButton(
+              onPressed: () => context.push('/notifications'),
+              icon: const Icon(Icons.notifications_outlined),
+              tooltip: 'Notifications'),
+          IconButton(
               onPressed: _load,
               icon: const Icon(Icons.refresh_rounded),
               tooltip: 'Refresh'),

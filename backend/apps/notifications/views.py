@@ -21,6 +21,20 @@ class NotificationListView(generics.ListAPIView):
         return Notification.objects.filter(user=self.request.user).order_by("-created_at")
 
 
+class NotificationUnreadCountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        responses=inline_serializer(
+            name="NotificationUnreadCountResponse",
+            fields={"unread_count": serializers.IntegerField()},
+        )
+    )
+    def get(self, request):
+        unread_count = Notification.objects.filter(user=request.user, read_at__isnull=True).count()
+        return Response({"unread_count": unread_count})
+
+
 class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 

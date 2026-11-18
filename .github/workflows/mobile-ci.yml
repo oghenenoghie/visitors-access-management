@@ -72,6 +72,9 @@ jobs:
         run: dart fix --apply --code=migrate_design_widgets
       - name: Apply Dart lint fixes
         run: dart fix --apply
+      - name: Show formatter output for inbox screen
+        if: always()
+        run: dart format --output=show lib/notification_inbox_screen.dart
       - name: Verify Dart formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
