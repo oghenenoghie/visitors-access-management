@@ -64,7 +64,7 @@ async function relay(response: Response, cookiesToSet?: { access: string; refres
 async function handle(request: NextRequest, context: RouteContext) {
   const { path: segments } = await context.params;
   if (!segments?.length || segments.some(part => part === "." || part === "..")) return jsonError("Invalid API path.", 400);
-  const path = segments.join("/");
+  const path = segments.join("/") + "/";
   const method = request.method.toUpperCase();
   if (!["GET", "POST", "PUT", "PATCH", "DELETE"].includes(method)) return jsonError("Method not allowed.", 405);
   if (!["GET", "HEAD"].includes(method)) {
@@ -75,9 +75,9 @@ async function handle(request: NextRequest, context: RouteContext) {
   const jar = await cookies();
   const access = jar.get(ACCESS_COOKIE)?.value;
   const refresh = jar.get(REFRESH_COOKIE)?.value;
-  const isLogin = path === "auth/login";
-  const isTwoFactor = path === "auth/2fa/setup" || path === "auth/2fa/confirm" || path === "auth/2fa/verify";
-  const isLogout = path === "auth/logout";
+  const isLogin = path === "auth/login/";
+  const isTwoFactor = path === "auth/2fa/setup/" || path === "auth/2fa/confirm/" || path === "auth/2fa/verify/";
+  const isLogout = path === "auth/logout/";
   const body = method === "GET" ? "" : await request.text();
 
   if (isLogout) {
@@ -100,7 +100,7 @@ async function handle(request: NextRequest, context: RouteContext) {
     }
   }
 
-  if (response.ok && (isLogin || path === "auth/2fa/confirm" || path === "auth/2fa/verify")) {
+  if (response.ok && (isLogin || path === "auth/2fa/confirm/" || path === "auth/2fa/verify/")) {
     const data = await response.json() as Record<string, unknown>;
     if (data.status === "authenticated" && typeof data.access === "string" && typeof data.refresh === "string") {
       const session = { access: data.access, refresh: data.refresh };
