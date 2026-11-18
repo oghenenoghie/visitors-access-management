@@ -15,6 +15,16 @@ type Auth = { user: User | null; ready: boolean; signOut: () => void };
 const Context = createContext<Auth>({ user: null, ready: false, signOut: () => {} });
 export const useAuth = () => useContext(Context);
 
+async function loadCurrentUser(): Promise<User> {
+  let response = await fetch("/api/bff/auth/me/", { credentials: "same-origin", cache: "no-store" });
+  for (let attempt = 0; response.status === 409 && attempt < 3; attempt += 1) {
+    await new Promise(resolve => setTimeout(resolve, 150 * (attempt + 1)));
+    response = await fetch("/api/bff/auth/me/", { credentials: "same-origin", cache: "no-store" });
+  }
+  if (!response.ok) throw new Error("Session expired");
+  return response.json() as Promise<User>;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [ready, setReady] = useState(false);
@@ -27,12 +37,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setReady(true);
       return () => { active = false; };
     }
-    fetch("/api/bff/auth/me/", { credentials: "same-origin", cache: "no-store" })
-      .then((response) => {
-        if (!response.ok) throw new Error("Session expired");
-        return response.json();
-      })
-      .then((data: User) => { if (active) setUser(data); })
+    loadCurrentUser()
+      .then(data => { if (active) setUser(data); })
       .catch(() => {
         if (active) {
           setUser(null);
