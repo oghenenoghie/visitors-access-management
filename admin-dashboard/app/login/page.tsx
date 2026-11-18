@@ -2,11 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { QRCodeSVG } from "qrcode.react";
 
 type AuthResult = {
   status?: string;
   challenge_token?: string;
   otpauth_uri?: string;
+  secret?: string;
+  recovery_codes?: string[];
   detail?: string;
   non_field_errors?: string[];
 };
@@ -19,6 +22,9 @@ export default function LoginPage() {
   const [challenge, setChallenge] = useState<string | null>(null);
   const [setup, setSetup] = useState(false);
   const [setupUri, setSetupUri] = useState<string | null>(null);
+  const [setupSecret, setSetupSecret] = useState<string | null>(null);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
+  const [setupComplete, setSetupComplete] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -49,16 +55,37 @@ export default function LoginPage() {
         if (data.status === "two_factor_setup_required") {
           const enrolment = await post("auth/2fa/setup/", { challenge_token: data.challenge_token });
           setSetupUri(enrolment.otpauth_uri || null);
+          setSetupSecret(enrolment.secret || null);
         }
         return;
       }
       if (data.status !== "authenticated") throw new Error("Unexpected authentication response.");
+      if (setup) {
+        setRecoveryCodes(data.recovery_codes || []);
+        setSetupComplete(true);
+        return;
+      }
       router.replace("/");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Sign-in failed.");
     } finally {
       setBusy(false);
     }
+  }
+
+  if (setupComplete) {
+    return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", background: "white", padding: 24 }}>
+      <section style={{ width: "100%", maxWidth: 520 }}>
+        <p className="eyebrow">TWO-FACTOR SECURITY ENABLED</p>
+        <h1 style={{ fontSize: 30, letterSpacing: "-.04em" }}>Save your recovery codes</h1>
+        <p className="page-subtitle">These codes are shown only once. Store them somewhere secure and separate from your authenticator device. Each code can be used once if you lose access to your authenticator.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: 18, margin: "22px 0", background: "#f4f6f8", borderRadius: 12 }}>
+          {recoveryCodes.map(code => <code key={code} style={{ fontSize: 15, fontWeight: 700, letterSpacing: ".08em" }}>{code}</code>)}
+        </div>
+        <button type="button" className="primary-btn" style={{ width: "100%", padding: 13 }} onClick={() => void navigator.clipboard.writeText(recoveryCodes.join("\\n"))}>Copy recovery codes</button>
+        <button type="button" className="primary-btn" style={{ width: "100%", padding: 13, marginTop: 10 }} onClick={() => router.replace("/")}>I have saved my codes — continue</button>
+      </section>
+    </main>;
   }
 
   return <main style={{ minHeight: "100vh", display: "grid", gridTemplateColumns: "1fr 1fr", background: "white" }}>
@@ -84,11 +111,19 @@ export default function LoginPage() {
         </> : <>
           <label className="eyebrow">Authenticator code</label>
           <input className="input" style={{ margin: "8px 0 16px", letterSpacing: ".2em" }} inputMode="numeric" maxLength={32} required value={code} onChange={e => setCode(e.target.value)} autoComplete="one-time-code" />
-          {setupUri && <p className="page-subtitle" style={{ overflowWrap: "anywhere" }}>Authenticator setup URI: {setupUri}</p>}
+          {setup && setupUri && setupSecret && <div style={{ margin: "8px 0 18px", padding: 16, border: "1px solid #e2e8f0", borderRadius: 12 }}>
+            <p className="eyebrow" style={{ marginBottom: 12 }}>SCAN WITH YOUR AUTHENTICATOR APP</p>
+            <div style={{ display: "grid", placeItems: "center", padding: 12, background: "white" }}>
+              <QRCodeSVG value={setupUri} size={196} level="M" includeMargin aria-label="Authenticator enrollment QR code" />
+            </div>
+            <p className="page-subtitle" style={{ marginTop: 12 }}>Or enter this setup key manually:</p>
+            <code style={{ display: "block", padding: 10, background: "#f4f6f8", borderRadius: 8, overflowWrap: "anywhere" }}>{setupSecret}</code>
+            <p className="page-subtitle" style={{ marginTop: 10, fontSize: 11 }}>The QR code is generated in this browser. The setup secret is not sent to a third-party QR service.</p>
+          </div>}
         </>}
         {error && <p className="error" style={{ marginBottom: 14 }}>{error}</p>}
         <button className="primary-btn" style={{ width: "100%", padding: 13 }} disabled={busy}>{busy ? "Please wait…" : challenge ? "Verify and continue" : "Sign in securely"}</button>
-        {challenge && <button type="button" className="primary-btn" style={{ width: "100%", marginTop: 10, background: "#64748b" }} onClick={() => { setChallenge(null); setCode(""); setSetupUri(null); }}>Use another account</button>}
+        {challenge && <button type="button" className="primary-btn" style={{ width: "100%", marginTop: 10, background: "#64748b" }} onClick={() => { setChallenge(null); setCode(""); setSetupUri(null); setSetupSecret(null); }}>Use another account</button>}
         <p className="page-subtitle" style={{ marginTop: 24, fontSize: 11 }}>Two-factor authentication is required for dashboard access.</p>
       </form>
     </section>
