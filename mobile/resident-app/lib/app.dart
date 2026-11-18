@@ -7,6 +7,7 @@ import 'core/api/api_client.dart';
 import 'core/auth/auth_repository.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/registration_screen.dart';
 import 'features/history/visitor_history_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/invitations/create_invitation_screen.dart';
@@ -34,6 +35,7 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (context, state) => const RegistrationScreen()),
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
       GoRoute(path: '/history', builder: (context, state) => const VisitorHistoryScreen()),
       GoRoute(path: '/invitations/new', builder: (context, state) => const CreateInvitationScreen()),
