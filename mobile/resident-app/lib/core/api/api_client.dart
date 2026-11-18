@@ -12,12 +12,14 @@ class ApiClient {
         )) {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        final token = await storage.read(key: accessTokenKey);
-        if (token != null && token.isNotEmpty) options.headers['Authorization'] = 'Bearer $token';
+        if (options.extra['skipAuth'] != true) {
+          final token = await storage.read(key: accessTokenKey);
+          if (token != null && token.isNotEmpty) options.headers['Authorization'] = 'Bearer $token';
+        }
         handler.next(options);
       },
       onError: (error, handler) async {
-        if (error.response?.statusCode == 401 && error.requestOptions.extra['retried'] != true) {
+        if (error.response?.statusCode == 401 && error.requestOptions.extra['skipAuth'] != true && error.requestOptions.extra['retried'] != true) {
           final refreshed = await _refresh();
           if (refreshed) {
             final request = error.requestOptions;
