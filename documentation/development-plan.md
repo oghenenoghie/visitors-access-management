@@ -9,7 +9,7 @@ Baseline from the master skill's ten-week schedule, broken into milestones. Each
 | M2 Auth and roles | 3 | JWT login/refresh/logout, admin-issued password reset codes, TOTP 2FA for dashboard accounts, activation by approval, role permissions, estate-scoped base queryset, audit log base | **Done** — permission tests and negative IDOR tests pass (95 tests, 98% coverage) |
 | M3 Residents and properties | 4 | Properties, streets, units, resident registration with encrypted ID upload, approval, assignments, bulk data import | **Done** — resident approval/rejection/suspension, assignments, encrypted identity storage and atomic CSV import; 130 tests pass |
 | M4 Access engine | 4 | Invitations, credentials, verify, check-in/out, override, one-time and multi-use, concurrency | **Done and merged** — PR #6 merged 18 Nov 2026 at `78ef1e877cd5ba936e36af540780ea756a9fd4dd`; PostgreSQL-backed test suite: 141 passed |
-| M5 Resident app | 5 | Flutter design system, authentication, dashboard, invitation creation, digital pass/QR, sharing and visitor history | **In progress** — first API-connected Flutter slice on `feat/m5-resident-app`; remaining: history screen, registration/onboarding, Android device verification and CI fixes |
+| M5 Resident app | 5 | Flutter design system, authentication, dashboard, invitation creation, digital pass/QR, sharing and visitor history | **In progress** — first API-connected Flutter slice on `feat/m5-resident-app`; remaining: Android device verification, API integration acceptance and CI fixes |
 | M6 Security app | 6 | Login, shift, scanner, manual code, approve/reject, check-in/out, logs, incidents | Verify under 2 s on test conditions |
 | M7 Admin dashboard | 7 | Overview, residents, units, visitors, gate monitoring, reports, audit logs, settings | Role restrictions tested |
 | M8 Integration and notifications | 8 | FCM, end-to-end flows across all apps, reports export | End-to-end scenarios pass |
@@ -26,6 +26,6 @@ After M2 and approved API contracts, mobile and dashboard work can begin against
 
 ## Next action
 
-Complete the M5 resident app: finish the dedicated visitor history experience and resident registration/onboarding, validate the Flutter build and tests, and perform Android emulator/device acceptance against the real API. Keep FCM delivery for M8. Do not start M6 until M5's Android acceptance criteria are met.
+Complete the M5 resident app: validate the Flutter build and tests, complete Android emulator/device acceptance against the real API, and perform Android emulator/device acceptance against the real API. Keep FCM delivery for M8. Do not start M6 until M5's Android acceptance criteria are met.
 
 M3 is complete in code and CI. The estate-code registration path creates only a pending, inactive account; it is not proof of residence. Keep administrator approval mandatory. Q8 remains open: production deployment must configure a private Django storage backend and securely back up `FIELD_ENCRYPTION_KEY` before collecting real identity documents.
