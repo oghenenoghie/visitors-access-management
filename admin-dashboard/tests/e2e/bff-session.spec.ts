@@ -19,7 +19,7 @@ test("login keeps tokens out of JSON and sets HttpOnly Strict cookies", async ({
   expect(body).not.toHaveProperty("access");
   expect(body).not.toHaveProperty("refresh");
 
-  const cookies = await context.cookies(origin);
+  const cookies = await context.cookies(bff + "/auth/login/");
   const access = cookies.find(cookie => cookie.name === "estate_access");
   const refresh = cookies.find(cookie => cookie.name === "estate_refresh");
   expect(access).toBeTruthy();
@@ -44,8 +44,8 @@ test("rejects state-changing requests with a foreign Origin", async ({ request }
 test("concurrent expired-session requests preserve the winning rotated cookies", async ({ page, context }) => {
   await page.goto("/login");
   await context.addCookies([
-    { name: "estate_access", value: "access-expired", url: origin, path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
-    { name: "estate_refresh", value: "refresh-shared", url: origin, path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
+    { name: "estate_access", value: "access-expired", domain: "localhost", path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
+    { name: "estate_refresh", value: "refresh-shared", domain: "localhost", path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
   ]);
 
   const responses = await Promise.all([
@@ -64,7 +64,7 @@ test("concurrent expired-session requests preserve the winning rotated cookies",
   expect(loserCookies).not.toContain("estate_refresh=");
   expect((await loser.json()).detail).toContain("Retry shortly");
 
-  const cookies = await context.cookies(origin);
+  const cookies = await context.cookies(bff + "/auth/me/");
   expect(cookies.find(cookie => cookie.name === "estate_access")?.value).toBe("access-rotated");
   expect(cookies.find(cookie => cookie.name === "estate_refresh")?.value).toBe("refresh-rotated");
 });
