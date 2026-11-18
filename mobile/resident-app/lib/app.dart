@@ -15,6 +15,7 @@ import 'features/history/visitor_history_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/invitations/create_invitation_screen.dart';
 import 'features/invitations/pass_screen.dart';
+import 'features/notifications/notification_inbox_screen.dart';
 
 final secureStorageProvider =
     Provider<FlutterSecureStorage>((ref) => const FlutterSecureStorage());
@@ -48,6 +49,10 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
       GoRoute(
           path: '/history',
           builder: (context, state) => const VisitorHistoryScreen()),
+      GoRoute(
+          path: '/notifications',
+          builder: (context, state) => NotificationInboxScreen(
+              api: ref.read(apiClientProvider).dio)),
       GoRoute(
           path: '/invitations/new',
           builder: (context, state) => const CreateInvitationScreen()),
