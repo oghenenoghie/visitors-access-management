@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "apps.audit_logs",
     "apps.authentication",
     "apps.access_control",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
