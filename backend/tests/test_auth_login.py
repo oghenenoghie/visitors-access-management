@@ -116,9 +116,7 @@ def test_concurrent_refresh_requests_only_rotate_once(resident):
         try:
             client = APIClient()
             barrier.wait(timeout=10)
-            response = client.post(
-                "/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]}
-            )
+            response = client.post("/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]})
             body = response.json() if response.status_code == 200 else None
             return response.status_code, body
         finally:
@@ -131,9 +129,7 @@ def test_concurrent_refresh_requests_only_rotate_once(resident):
     winner = next(body for status, body in results if status == 200)
     assert winner["refresh"] != tokens["refresh"]
 
-    replay = APIClient().post(
-        "/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]}
-    )
+    replay = APIClient().post("/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]})
     assert replay.status_code == 401
 
 
