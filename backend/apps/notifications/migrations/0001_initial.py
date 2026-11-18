@@ -1,4 +1,5 @@
 import django.db.models.deletion
+import uuid
 from django.conf import settings
 from django.db import migrations, models
 
@@ -10,7 +11,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DeviceRegistration",
             fields=[
-                ("id", models.UUIDField(primary_key=True, serialize=False, editable=False)),
+                ("id", models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False, editable=False)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("token_hash", models.CharField(max_length=64, unique=True)),
