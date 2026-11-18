@@ -1,6 +1,8 @@
-from django.db import transaction
+from django.db import connection, transaction
 from rest_framework import serializers
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenBackendError
+from rest_framework.exceptions import APIException
+from rest_framework_simplejwt.backends import TokenBackendError
+from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.state import token_backend
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
@@ -9,6 +11,12 @@ from apps.estates.models import EstateMembership
 from apps.users.models import User
 
 from .totp import is_enrolled
+
+
+class RefreshCoordinationUnavailable(APIException):
+    status_code = 503
+    default_detail = "Refresh token rotation is temporarily unavailable."
+    default_code = "refresh_coordination_unavailable"
 
 
 class LockedTokenRefreshSerializer(TokenRefreshSerializer):
@@ -22,6 +30,9 @@ class LockedTokenRefreshSerializer(TokenRefreshSerializer):
     """
 
     def validate(self, attrs):
+        if not connection.features.has_select_for_update:
+            raise RefreshCoordinationUnavailable()
+
         raw_refresh = attrs["refresh"]
         try:
             payload = token_backend.decode(raw_refresh, verify=True)
