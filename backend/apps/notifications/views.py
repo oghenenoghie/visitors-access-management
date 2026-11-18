@@ -24,9 +24,7 @@ class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        notification = get_object_or_404(
-            Notification.objects.filter(user=request.user), pk=pk
-        )
+        notification = get_object_or_404(Notification.objects.filter(user=request.user), pk=pk)
         if notification.read_at is None:
             notification.read_at = timezone.now()
             notification.save(update_fields=["read_at", "updated_at"])
