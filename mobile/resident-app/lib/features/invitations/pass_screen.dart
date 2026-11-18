@@ -36,14 +36,12 @@ class _PassScreenState extends ConsumerState<PassScreen> {
     try {
       final api = ref.read(apiClientProvider);
       final repo = InvitationRepository(api, ref.read(secureStorageProvider));
-      final responses = await Future.wait([
-        api.dio.get('invitations/${widget.invitationId}/'),
-        repo.credentials(widget.invitationId),
-      ]);
+      final invitationResponse = await api.dio.get('invitations/${widget.invitationId}/');
+      final credentials = await repo.credentials(widget.invitationId);
       if (!mounted) return;
       setState(() {
-        _invitation = Map<String, dynamic>.from(responses[0].data as Map);
-        _credentials = responses[1] as Map<String, dynamic>?;
+        _invitation = Map<String, dynamic>.from(invitationResponse.data as Map);
+        _credentials = credentials;
         _loading = false;
       });
     } catch (_) {
@@ -149,7 +147,8 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                 );
                 if (confirmed == true) {
                   await _cancel();
-                  if (mounted) context.pop();
+                  if (!mounted) return;
+                  context.pop();
                 }
               },
               child: const Text('Cancel invitation'),
