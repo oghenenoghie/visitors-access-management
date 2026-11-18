@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+Z import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:intl/intl.dart';
 
@@ -49,8 +49,7 @@ class _GateNotificationInboxScreenState
       if (!mounted) return;
       setState(() {
         _items = _parseRows(responses[0].data);
-        _unreadCount =
-            (responses[1].data as Map)['unread_count'] as int? ?? 0;
+        _unreadCount = (responses[1].data as Map)['unread_count'] as int? ?? 0;
         _loading = false;
       });
     } on DioException catch (error) {
@@ -209,7 +208,8 @@ class _GateNotificationInboxScreenState
                                           isUnread
                                               ? Icons
                                                   .notifications_active_outlined
-                                              : Icons.notifications_none_rounded,
+                                              : Icons
+                                                  .notifications_none_rounded,
                                         ),
                                       ),
                                       title: Text(
@@ -228,7 +228,7 @@ class _GateNotificationInboxScreenState
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              item['body']?.toString() ?? ''),
+                                                item['body']?.toString() ?? ''),
                                             const SizedBox(height: 5),
                                             Text(
                                               createdAt == null
@@ -236,7 +236,7 @@ class _GateNotificationInboxScreenState
                                                   : DateFormat(
                                                       'd MMM yyyy · h:mm a',
                                                     ).format(
-                                                       createdAt.toLocal()),
+                                                      createdAt.toLocal()),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelSmall,
@@ -259,7 +259,8 @@ class _GateNotificationInboxScreenState
                                                   onPressed: () =>
                                                       _markRead(item),
                                                   icon: const Icon(
-                                                    Icons.mark_email_read_outlined,
+                                                    Icons
+                                                        .mark_email_read_outlined,
                                                   ),
                                                 )
                                           : const Icon(
@@ -280,3 +281,4 @@ class _GateNotificationInboxScreenState
     );
   }
 }
+2026-11-18T09:25:11.0937779
