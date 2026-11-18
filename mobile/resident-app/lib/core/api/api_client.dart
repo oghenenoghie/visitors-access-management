@@ -4,11 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class ApiClient {
   ApiClient(this.storage, {String? baseUrl})
       : dio = Dio(BaseOptions(
-          baseUrl: (baseUrl ??
-                      const String.fromEnvironment('API_BASE_URL',
-                          defaultValue: 'http://10.0.2.2:8000/api/v1/'))
-                  .replaceAll(RegExp(r'/$'), '') +
-              '/',
+          baseUrl:
+              '${(baseUrl ?? const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:8000/api/v1/')).replaceAll(RegExp(r'/$'), '')}/',
           connectTimeout: const Duration(seconds: 15),
           receiveTimeout: const Duration(seconds: 20),
           sendTimeout: const Duration(seconds: 20),
@@ -18,8 +15,9 @@ class ApiClient {
       onRequest: (options, handler) async {
         if (options.extra['skipAuth'] != true) {
           final token = await storage.read(key: accessTokenKey);
-          if (token != null && token.isNotEmpty)
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
+          }
         }
         handler.next(options);
       },
@@ -64,8 +62,9 @@ class ApiClient {
       if (access == null) return false;
       await storage.write(key: accessTokenKey, value: access);
       final rotated = data['refresh'] as String?;
-      if (rotated != null)
+      if (rotated != null) {
         await storage.write(key: refreshTokenKey, value: rotated);
+      }
       return true;
     } on DioException {
       await clearSession();

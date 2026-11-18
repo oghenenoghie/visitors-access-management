@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -46,11 +46,12 @@ class _PassScreenState extends ConsumerState<PassScreen> {
         _loading = false;
       });
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = 'This invitation could not be loaded.';
           _loading = false;
         });
+      }
     }
   }
 
@@ -96,8 +97,9 @@ class _PassScreenState extends ConsumerState<PassScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading)
+    if (_loading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (_error != null || _invitation == null) {
       return Scaffold(
           appBar: AppBar(),

@@ -42,8 +42,9 @@ class AuthRepository {
   Future<void> signOut() async {
     final refresh = await storage.read(key: ApiClient.refreshTokenKey);
     try {
-      if (refresh != null)
+      if (refresh != null) {
         await api.dio.post('auth/logout/', data: {'refresh': refresh});
+      }
     } finally {
       await api.clearSession();
     }

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -66,11 +66,12 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       if (mounted) setState(() => _submitted = true);
     } on DioException catch (error) {
       final data = error.response?.data;
-      if (mounted)
+      if (mounted) {
         setState(() => _error = data is Map
             ? (data['detail'] ?? data['error']?['message'] ?? data.toString())
                 .toString()
             : 'Registration could not be submitted.');
+      }
     } finally {
       if (mounted) setState(() => _busy = false);
     }

@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -56,11 +56,12 @@ class _CreateInvitationScreenState
         _loading = false;
       });
     } on DioException {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = 'Could not load your approved home or unit assignment.';
           _loading = false;
         });
+      }
     }
   }
 
@@ -81,8 +82,9 @@ class _CreateInvitationScreenState
           selected.year, selected.month, selected.day, time.hour, time.minute);
       if (start) {
         _from = value;
-        if (!_until.isAfter(_from))
+        if (!_until.isAfter(_from)) {
           _until = _from.add(const Duration(hours: 1));
+        }
       } else {
         _until = value;
       }
@@ -118,13 +120,14 @@ class _CreateInvitationScreenState
       if (mounted) context.go('/passes/${invitation['id']}');
     } on DioException catch (error) {
       final data = error.response?.data;
-      if (mounted)
+      if (mounted) {
         setState(() => _error = data is Map
             ? (data['detail'] ??
                     data['error']?['message'] ??
                     'Invitation could not be created.')
                 .toString()
             : 'Unable to connect to the service.');
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -172,7 +175,7 @@ class _CreateInvitationScreenState
                         color: AppColors.muted)),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _unitId,
+                  initialValue: _unitId,
                   decoration: const InputDecoration(labelText: 'Home / unit'),
                   items: _units
                       .map((unit) => DropdownMenuItem<String>(
@@ -195,7 +198,7 @@ class _CreateInvitationScreenState
                     onTap: () => _pickDate(start: false)),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: _accessType,
+                  initialValue: _accessType,
                   decoration: const InputDecoration(labelText: 'Access type'),
                   items: const [
                     DropdownMenuItem(
@@ -209,7 +212,7 @@ class _CreateInvitationScreenState
                 if (_accessType == 'multi_use') ...[
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
-                    value: _maxUses,
+                    initialValue: _maxUses,
                     decoration:
                         const InputDecoration(labelText: 'Maximum entries'),
                     items: [2, 3, 5, 10, 20]
