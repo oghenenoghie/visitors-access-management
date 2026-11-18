@@ -44,7 +44,11 @@ def test_registering_same_token_moves_device_to_current_account(api_client, make
     token = "fcm-device-token-" + ("y" * 80)
 
     api_client.force_authenticate(first_user)
-    api_client.post(API + "devices/push-token/", {"token": token, "platform": "android"}, format="json")
+    api_client.post(
+        API + "devices/push-token/",
+        {"token": token, "platform": "android"},
+        format="json",
+    )
     api_client.force_authenticate(second_user)
     response = api_client.post(
         API + "devices/push-token/", {"token": token, "platform": "ios"}, format="json"
