@@ -69,10 +69,10 @@ class PushNotificationService {
 
   Future<void> start(
     Dio api, {
-    required void Function(String resourceId) onInvitationTap,
+    void Function(String resourceId)? onInvitationTap,
   }) async {
     _api = api;
-    _onInvitationTap = onInvitationTap;
+    if (onInvitationTap != null) _onInvitationTap = onInvitationTap;
     await initialize();
     if (!_available) return;
     try {
