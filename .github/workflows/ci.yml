@@ -47,3 +47,21 @@ jobs:
         run: python manage.py spectacular --file /tmp/schema.yml --validate --fail-on-warn
       - name: Tests
         run: pytest --cov=apps --cov-report=term-missing
+
+  admin-dashboard:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin-dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+        env:
+          ESTATE_API_BASE_URL: https://api.example.invalid/api/v1
