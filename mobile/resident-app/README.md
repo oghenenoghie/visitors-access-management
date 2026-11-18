@@ -10,7 +10,13 @@ Flutter application for residents to authenticate, create visitor invitations an
 
 ## Run
 
-From this directory:
+From this directory, generate the native Android project once (the Flutter source tree is intentionally kept platform-light):
+
+```bash
+flutter create --platforms=android --org com.estateaccess .
+```
+
+Then run:
 
 ```bash
 flutter pub get
@@ -42,4 +48,4 @@ For a physical Android device, replace `10.0.2.2` with the development machine's
 
 ## Device testing
 
-The GitHub Actions mobile workflow runs dependency resolution, Dart formatting, static analysis and widget tests. Android emulator/device testing requires an Android SDK and a reachable backend configured with the API URL.
+The GitHub Actions mobile workflow generates the Android platform, then runs dependency resolution, Dart formatting, static analysis, widget tests and a debug APK build. Android emulator/device testing requires an Android SDK and a reachable backend configured with the API URL.
