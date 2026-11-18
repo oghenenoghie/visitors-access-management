@@ -1211,16 +1211,13 @@ PATCH  /api/v1/residential-units/{id}/
 
 ## Visitors and invitations
 
-```text
-GET    /api/v1/visitors/
-POST   /api/v1/visitors/
-GET    /api/v1/visitors/{id}/
+The M4 API creates the visitor record as part of invitation creation. It returns the QR token and manual access code only once; there is no standalone visitor CRUD endpoint or credential-reveal endpoint.
 
+```text
 GET    /api/v1/invitations/
 POST   /api/v1/invitations/
 GET    /api/v1/invitations/{id}/
 POST   /api/v1/invitations/{id}/cancel/
-POST   /api/v1/invitations/{id}/credentials/
 ```
 
 ## Gate operations
@@ -1229,9 +1226,8 @@ POST   /api/v1/invitations/{id}/credentials/
 POST   /api/v1/gate/verify/
 POST   /api/v1/gate/check-in/
 POST   /api/v1/gate/check-out/
-GET    /api/v1/gate/visitors-inside/
+POST   /api/v1/gate/override/
 GET    /api/v1/gate/activity/
-POST   /api/v1/gate/incidents/
 ```
 
 ## Administration

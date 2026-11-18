@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "apps.residents",
     "apps.audit_logs",
     "apps.authentication",
+    "apps.access_control",
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,11 @@ SPECTACULAR_SETTINGS = {
         "ResidentDocumentStatusEnum": "apps.residents.models.ResidentDocumentStatus.choices",
         "ResidentAssignmentStatusEnum": "apps.residents.models.AssignmentStatus.choices",
         "ResidentDocumentTypeEnum": "apps.residents.models.ResidentDocumentType.choices",
+        "InvitationStatusEnum": "apps.access_control.models.InvitationStatus.choices",
+        "AccessTypeEnum": "apps.access_control.models.AccessType.choices",
+        "CredentialStatusEnum": "apps.access_control.models.CredentialStatus.choices",
+        "AccessEventTypeEnum": "apps.access_control.models.AccessEventType.choices",
+        "AccessEventStatusEnum": "apps.access_control.models.AccessEventStatus.choices",
     },
 }
 API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=DEBUG)

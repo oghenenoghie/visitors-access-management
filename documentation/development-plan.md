@@ -8,7 +8,7 @@ Baseline from the master skill's ten-week schedule, broken into milestones. Each
 | M1 Foundation | 3 | Monorepo scaffold, Docker Compose (Postgres, Redis), Django project, custom user, estates, memberships, CI | CI green, migrations clean, `.env.example` per app |
 | M2 Auth and roles | 3 | JWT login/refresh/logout, admin-issued password reset codes, TOTP 2FA for dashboard accounts, activation by approval, role permissions, estate-scoped base queryset, audit log base | Permission tests green, negative IDOR tests. **Status: done** (95 tests, 98% coverage) |
 | M3 Residents and properties | 4 | Properties, streets, units, resident registration with encrypted ID upload, approval, assignments, bulk data import | Property/unit APIs, resident approval/rejection/suspension, unit assignments, encrypted identity-document storage and dry-run/atomic CSV imports implemented. **Status: done** — Ruff lint/format, Django checks, migrations, OpenAPI validation and 130 tests all pass. |
-| M4 Access engine | 4 | Invitations, credentials, verify, check-in/out, override, one-time and multi-use, concurrency | Seven acceptance scenarios pass, concurrent-consume test passes |
+| M4 Access engine | 4 | Invitations, credentials, verify, check-in/out, override, one-time and multi-use, concurrency | Implemented on `feat/m4-access-engine`; lint, Django checks, migration consistency, OpenAPI validation and PostgreSQL concurrency tests pass. **141 tests pass**. PR #6 awaits review/merge. |
 | M5 Resident app | 5 | Design system package, auth, dashboard, create invitation, pass with QR and share, history, notifications | Runs on Android against the real API |
 | M6 Security app | 6 | Login, shift, scanner, manual code, approve/reject, check-in/out, logs, incidents | Verify under 2 s on test conditions |
 | M7 Admin dashboard | 7 | Overview, residents, units, visitors, gate monitoring, reports, audit logs, settings | Role restrictions tested |
@@ -26,6 +26,6 @@ After M2 and approved API contracts, mobile and dashboard work can begin against
 
 ## Next action
 
-Start M4 (Access Engine) on a new feature branch. Implement invitation lifecycle, QR/credential generation and verification, check-in/check-out, administrator overrides, one-time and multi-use passes, and concurrency-safe credential consumption. Preserve estate scoping and append-only audit events. Acceptance criteria include the seven scenarios in the master skill and a concurrent-consume test.
+Review and merge M4 PR #6. After merge, start M5 (Resident App): establish the Flutter design system and app shell, authenticate against the real API, then build the resident dashboard, invitation creation and secure visitor-pass sharing. Keep FCM delivery for M8.
 
 M3 is complete in code and CI. The estate-code registration path creates only a pending, inactive account; it is not proof of residence. Keep administrator approval mandatory. Q8 remains open: production deployment must configure a private Django storage backend and securely back up `FIELD_ENCRYPTION_KEY` before collecting real identity documents.

@@ -13,6 +13,7 @@ urlpatterns = [
     path("api/v1/", include("apps.residents.import_urls")),
     path("api/v1/", include("apps.authentication.urls")),
     path("api/v1/", include("apps.audit_logs.urls")),
+    path("api/v1/", include("apps.access_control.urls")),
 ]
 
 if settings.API_DOCS_ENABLED:

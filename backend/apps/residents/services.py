@@ -149,6 +149,37 @@ def suspend_resident(*, profile, actor, request, note=""):
     profile.save(
         update_fields=["status", "reviewed_at", "reviewed_by", "review_note", "updated_at"]
     )
+    # Policy: suspending a resident immediately cancels all active visitor passes.
+    from apps.access_control.models import (
+        AccessCredential,
+        CredentialStatus,
+        InvitationStatus,
+    )
+
+    credentials = (
+        AccessCredential.objects.select_for_update(of=("self",))
+        .select_related("invitation", "invitation__estate")
+        .filter(
+            invitation__resident=profile,
+            invitation__status=InvitationStatus.ACTIVE,
+        )
+    )
+    for credential in credentials:
+        invitation = credential.invitation
+        credential.status = CredentialStatus.REVOKED
+        credential.save(update_fields=["status", "updated_at"])
+        invitation.status = InvitationStatus.CANCELLED
+        invitation.save(update_fields=["status", "updated_at"])
+        record(
+            action="invitation.revoked_by_resident_suspension",
+            actor=actor,
+            estate=invitation.estate,
+            resource=invitation,
+            previous_values={"status": InvitationStatus.ACTIVE},
+            new_values={"status": InvitationStatus.CANCELLED},
+            request=request,
+        )
+
     record(
         action="resident.suspended",
         actor=actor,
