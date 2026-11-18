@@ -226,14 +226,16 @@ class _NotificationInboxScreenState extends State<NotificationInboxScreen> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
-                                            Text(item['body']?.toString() ?? ''),
+                                            Text(
+                                              item['body']?.toString() ?? ''),
                                             const SizedBox(height: 5),
                                             Text(
                                               createdAt == null
                                                   ? 'Date unavailable'
                                                   : DateFormat(
                                                       'd MMM yyyy · h:mm a',
-                                                    ).format(createdAt.toLocal()),
+                                                    ).format(
+                                                       createdAt.toLocal()),
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .labelSmall,
