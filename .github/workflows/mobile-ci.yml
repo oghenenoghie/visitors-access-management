@@ -72,6 +72,14 @@ jobs:
         run: dart fix --apply --code=migrate_design_widgets
       - name: Apply Dart lint fixes
         run: dart fix --apply
+      - name: Print Dart formatter output for inbox files
+        if: always()
+        run: |
+          if [ "${{ matrix.app }}" = "resident-app" ]; then
+            dart format --output=show lib/app.dart lib/features/notifications/notification_inbox_screen.dart
+          else
+            dart format --output=show lib/notification_inbox_screen.dart
+          fi
       - name: Verify Dart formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
