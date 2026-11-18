@@ -113,7 +113,10 @@ async function handle(request: NextRequest, context: RouteContext) {
       rotated = renewed;
       response = await upstream(path, method, body, renewed.access);
     } else {
-      return relay(response, undefined, true);
+      // Another in-flight request may already have rotated this refresh token.
+      // Do not expire cookies here: its successful response may be setting the
+      // replacement session cookies in the browser at the same time.
+      return jsonError("Session refresh conflicted with another request. Retry shortly.", 409);
     }
   }
 
