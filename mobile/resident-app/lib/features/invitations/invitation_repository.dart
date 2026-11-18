@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/api/api_client.dart';
@@ -43,7 +45,13 @@ class InvitationRepository {
       'access_type': accessType,
       if (maxUses != null) 'max_uses': maxUses,
     };
-    final response = await api.dio.post('invitations/', data: payload);
+    final random = Random.secure();
+    final idempotencyKey = List.generate(32, (_) => random.nextInt(16).toRadixString(16)).join();
+    final response = await api.dio.post(
+      'invitations/',
+      data: payload,
+      options: Options(headers: {'Idempotency-Key': idempotencyKey}),
+    );
     final result = Map<String, dynamic>.from(response.data as Map);
     final invitation = Map<String, dynamic>.from(result['invitation'] as Map);
     final id = invitation['id'] as String;
