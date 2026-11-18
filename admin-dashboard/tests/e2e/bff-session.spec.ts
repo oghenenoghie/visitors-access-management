@@ -1,25 +1,25 @@
 import { expect, test } from "@playwright/test";
 
+const origin = "http://localhost:3000";
+const bff = origin + "/api/bff";
+
 test.beforeEach(async ({ request }) => {
   await request.get("http://127.0.0.1:4010/__reset");
 });
 
 test("login keeps tokens out of JSON and sets HttpOnly Strict cookies", async ({ page, context }) => {
   await page.goto("/login");
-  const response = await page.evaluate(async () => {
-    const result = await fetch("/api/bff/auth/login/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: "qa@example.test", password: "not-a-real-password" }),
-    });
-    return { status: result.status, body: await result.json() };
+  const response = await page.request.post(bff + "/auth/login/", {
+    headers: { Origin: origin },
+    data: { email: "qa@example.test", password: "not-a-real-password" },
   });
 
-  expect(response.status).toBe(200);
-  expect(response.body).not.toHaveProperty("access");
-  expect(response.body).not.toHaveProperty("refresh");
+  expect(response.status()).toBe(200);
+  const body = await response.json();
+  expect(body).not.toHaveProperty("access");
+  expect(body).not.toHaveProperty("refresh");
 
-  const cookies = await context.cookies();
+  const cookies = await context.cookies(origin);
   const access = cookies.find(cookie => cookie.name === "estate_access");
   const refresh = cookies.find(cookie => cookie.name === "estate_refresh");
   expect(access).toBeTruthy();
@@ -33,7 +33,7 @@ test("login keeps tokens out of JSON and sets HttpOnly Strict cookies", async ({
 });
 
 test("rejects state-changing requests with a foreign Origin", async ({ request }) => {
-  const response = await request.post("http://localhost:3000/api/bff/auth/login/", {
+  const response = await request.post(bff + "/auth/login/", {
     headers: { Origin: "https://attacker.example" },
     data: { email: "qa@example.test", password: "invalid" },
   });
@@ -44,31 +44,27 @@ test("rejects state-changing requests with a foreign Origin", async ({ request }
 test("concurrent expired-session requests preserve the winning rotated cookies", async ({ page, context }) => {
   await page.goto("/login");
   await context.addCookies([
-    { name: "estate_access", value: "access-expired", domain: "localhost", path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
-    { name: "estate_refresh", value: "refresh-shared", domain: "localhost", path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
+    { name: "estate_access", value: "access-expired", url: origin, path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
+    { name: "estate_refresh", value: "refresh-shared", url: origin, path: "/api/bff", httpOnly: true, secure: true, sameSite: "Strict" },
   ]);
 
-  const results = await page.evaluate(async () => {
-    const responses = await Promise.all([
-      fetch("/api/bff/auth/me/", { credentials: "same-origin", cache: "no-store" }),
-      fetch("/api/bff/auth/me/", { credentials: "same-origin", cache: "no-store" }),
-    ]);
-    return Promise.all(responses.map(async response => ({
-      status: response.status,
-      body: await response.json(),
-      setCookie: response.headers.get("set-cookie"),
-    })));
-  });
+  const responses = await Promise.all([
+    page.request.get(bff + "/auth/me/", { headers: { Origin: origin } }),
+    page.request.get(bff + "/auth/me/", { headers: { Origin: origin } }),
+  ]);
+  expect(responses.map(response => response.status()).sort()).toEqual([200, 409]);
 
-  expect(results.map(result => result.status).sort()).toEqual([200, 409]);
-  const winner = results.find(result => result.status === 200)!;
-  const loser = results.find(result => result.status === 409)!;
-  expect(winner.setCookie).toContain("estate_access=access-rotated");
-  expect(winner.setCookie).toContain("estate_refresh=refresh-rotated");
-  expect(loser.setCookie).toBeNull();
-  expect(loser.body.detail).toContain("Retry shortly");
+  const winner = responses.find(response => response.status() === 200)!;
+  const loser = responses.find(response => response.status() === 409)!;
+  const winnerCookies = winner.headers()["set-cookie"] || "";
+  const loserCookies = loser.headers()["set-cookie"] || "";
+  expect(winnerCookies).toContain("estate_access=access-rotated");
+  expect(winnerCookies).toContain("estate_refresh=refresh-rotated");
+  expect(loserCookies).not.toContain("estate_access=");
+  expect(loserCookies).not.toContain("estate_refresh=");
+  expect((await loser.json()).detail).toContain("Retry shortly");
 
-  const cookies = await context.cookies();
+  const cookies = await context.cookies(origin);
   expect(cookies.find(cookie => cookie.name === "estate_access")?.value).toBe("access-rotated");
   expect(cookies.find(cookie => cookie.name === "estate_refresh")?.value).toBe("refresh-rotated");
 });
