@@ -41,8 +41,8 @@ jobs:
           source = gradle_file.read_text()
 
           source, count = re.subn(
-              r"compileOptions\\s*\\{",
-              "compileOptions {\\n        isCoreLibraryDesugaringEnabled = true",
+              r"compileOptions\s*\{",
+              "compileOptions {\n        isCoreLibraryDesugaringEnabled = true",
               source,
               count=1,
           )
@@ -50,19 +50,19 @@ jobs:
               raise SystemExit("Could not locate the Android compileOptions block")
 
           if "coreLibraryDesugaring(" not in source:
-              match = re.search(r"\\ndependencies\\s*\\{", source)
+              match = re.search(r"\ndependencies\s*\{", source)
               if match:
                   insert_at = match.end()
                   source = (
                       source[:insert_at]
-                      + '\\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")'
+                      + '\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")'
                       + source[insert_at:]
                   )
               else:
                   source += (
-                      '\\ndependencies {\\n'
-                      '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\\n'
-                      '}\\n'
+                      '\ndependencies {\n'
+                      '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\n'
+                      '}\n'
                   )
 
           gradle_file.write_text(source)
