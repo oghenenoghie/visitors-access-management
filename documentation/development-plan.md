@@ -11,8 +11,8 @@ Baseline from the master skill's ten-week schedule, broken into milestones. Each
 | M4 Access engine | 4 | Invitations, credentials, verify, check-in/out, override, one-time and multi-use, concurrency | **Done and merged** — PR #6 merged 18 Nov 2026 at `78ef1e877cd5ba936e36af540780ea756a9fd4dd`; PostgreSQL-backed test suite: 141 passed |
 | M5 Resident app | 5 | Flutter design system, authentication, dashboard, invitation creation, digital pass/QR, sharing and visitor history | **In progress** — first API-connected Flutter slice on `feat/m5-resident-app`; remaining: Android device verification, API integration acceptance and CI fixes |
 | M6 Security app | 6 | Login, shift, scanner, manual code, approve/reject, check-in/out, logs, incidents | Verify under 2 s on test conditions |
-| M7 Admin dashboard | 7 | Overview, residents, units, visitors, gate monitoring, reports, audit logs, settings | Role restrictions tested |
-| M8 Integration and notifications | 8 | FCM, end-to-end flows across all apps, reports export | End-to-end scenarios pass |
+| M7 Admin dashboard | 7 | Overview, residents, units, visitors, gate monitoring, reports, audit logs, settings | **Done and merged** — PR #10 plus ESLint fixes #11/#12; dashboard and backend CI passed for #12 |
+| M8 Integration and notifications | 8 | FCM, end-to-end flows across all apps, reports export | **In progress** — server notification inbox, encrypted FCM device registration, Celery delivery and visitor-event notifications in PR #13; mobile SDK integration and end-to-end verification remain |
 | M9 QA and security review | 9 | Functional, security, device, performance, UAT, defect fixes | Critical/high defects closed, security review documented |
 | M10 Deployment | 10 | Production, backups, monitoring, signing, Play submission, training, handover | Rollback and recovery procedure tested |
 
@@ -26,6 +26,6 @@ After M2 and approved API contracts, mobile and dashboard work can begin against
 
 ## Next action
 
-Complete the M5 resident app: validate the Flutter build and tests, complete Android emulator/device acceptance against the real API, and perform Android emulator/device acceptance against the real API. Keep FCM delivery for M8. Do not start M6 until M5's Android acceptance criteria are met.
+Complete M8 integration: add Firebase initialization and token lifecycle to both Flutter apps, implement foreground/background notification handling and safe deep links, verify delivery against a Firebase test project, then finish report exports and cross-application end-to-end scenarios.
 
 M3 is complete in code and CI. The estate-code registration path creates only a pending, inactive account; it is not proof of residence. Keep administrator approval mandatory. Q8 remains open: production deployment must configure a private Django storage backend and securely back up `FIELD_ENCRYPTION_KEY` before collecting real identity documents.
