@@ -26,6 +26,8 @@ Deliver the first Flutter resident application slice against the merged Django R
 6. Invitation creation using the existing backend serializer fields.
 7. One-time QR token and manual access code stored in secure device storage.
 8. Pass detail, QR rendering, native share sheet and invitation cancellation.
+9. Dedicated visitor history with all, active, cancelled and completed filters.
+10. Resident registration request with explicit pending-approval messaging.
 
 ## Contract and security decisions
 
@@ -38,7 +40,7 @@ Deliver the first Flutter resident application slice against the merged Django R
 
 ## Deferred
 
-- Public resident registration and pending-approval onboarding.
+- Identity-document upload during public resident registration (the API accepts it optionally; the app's initial form omits document upload).
 - FCM device registration and push delivery (M8).
 - Security gate scanner (M6).
 - Estate admin web dashboard (M7).
