@@ -99,7 +99,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       Expanded(child: _MetricCard(label: 'All invitations', value: _invitations.length.toString(), icon: Icons.groups_2_outlined)),
                     ]),
                     const SizedBox(height: 28),
-                    Text('Recent invitations', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text('Recent invitations', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
+                      TextButton(onPressed: () => context.push('/history'), child: const Text('View all')),
+                    ]),
                     const SizedBox(height: 12),
                     if (recent.isEmpty) const _EmptyState()
                     else ...recent.map((item) => Padding(padding: const EdgeInsets.only(bottom: 10), child: _InvitationTile(item: item))),
