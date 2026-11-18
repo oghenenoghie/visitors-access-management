@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from apps.audit_logs.services import record
+from apps.notifications.services import create_notification
 from apps.estates.models import EstateMembership, EstateRole, MembershipStatus
 from apps.properties.models import PropertyStatus
 from apps.residents.models import (
@@ -151,6 +152,13 @@ def cancel_invitation(*, invitation, actor, request):
         previous_values={"status": InvitationStatus.ACTIVE},
         new_values={"status": InvitationStatus.CANCELLED},
         request=request,
+    )
+    create_notification(
+        user=invitation.resident.user,
+        notification_type="visitor.invitation_cancelled",
+        title="Visitor invitation cancelled",
+        body=f"The invitation for {invitation.visitor.full_name} was cancelled.",
+        data={"invitation_id": str(invitation.pk)},
     )
     return invitation
 
@@ -356,6 +364,13 @@ def check_in(*, value, gate, actor, request):
         new_values={"event_id": str(event.pk), "gate_id": str(gate.pk)},
         request=request,
     )
+    create_notification(
+        user=invitation.resident.user,
+        notification_type="visitor.checked_in",
+        title="Your visitor has arrived",
+        body=f"{invitation.visitor.full_name} has entered the estate.",
+        data={"invitation_id": str(invitation.pk), "event_id": str(event.pk)},
+    )
     return event
 
 
@@ -400,6 +415,13 @@ def check_out(*, invitation, gate, actor, request):
         resource=invitation,
         new_values={"event_id": str(event.pk), "entry_id": str(entry.pk)},
         request=request,
+    )
+    create_notification(
+        user=invitation.resident.user,
+        notification_type="visitor.checked_out",
+        title="Your visitor has left",
+        body=f"{invitation.visitor.full_name} has exited the estate.",
+        data={"invitation_id": str(invitation.pk), "event_id": str(event.pk)},
     )
     if invitation.access_type == AccessType.SINGLE_USE:
         invitation.status = InvitationStatus.COMPLETED
@@ -460,5 +482,12 @@ def manual_override(*, invitation, gate, actor, reason, request):
         resource=invitation,
         new_values={"reason": reason.strip()[:500], "event_id": str(event.pk)},
         request=request,
+    )
+    create_notification(
+        user=invitation.resident.user,
+        notification_type="visitor.checked_in",
+        title="Your visitor was admitted",
+        body=f"{invitation.visitor.full_name} was admitted by a supervisor override.",
+        data={"invitation_id": str(invitation.pk), "event_id": str(event.pk)},
     )
     return event
