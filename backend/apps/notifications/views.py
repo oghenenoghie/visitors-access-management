@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import generics, status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, serializers, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -23,6 +24,7 @@ class NotificationListView(generics.ListAPIView):
 class NotificationReadView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(request=None, responses=NotificationSerializer)
     def post(self, request, pk):
         notification = get_object_or_404(Notification.objects.filter(user=request.user), pk=pk)
         if notification.read_at is None:
@@ -34,6 +36,15 @@ class NotificationReadView(APIView):
 class DeviceRegistrationView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        request=DeviceRegistrationSerializer,
+        responses={
+            200: inline_serializer(
+                name="DeviceRegistrationResponse",
+                fields={"registered": serializers.BooleanField()},
+            )
+        },
+    )
     def post(self, request):
         serializer = DeviceRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -44,6 +55,10 @@ class DeviceRegistrationView(APIView):
         )
         return Response({"registered": device.is_active}, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        request=DeviceRegistrationSerializer,
+        responses={204: None},
+    )
     def delete(self, request):
         serializer = DeviceRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
