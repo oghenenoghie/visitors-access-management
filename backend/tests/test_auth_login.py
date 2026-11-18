@@ -1,4 +1,9 @@
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
+
 import pytest
+from django.db import close_old_connections
+from rest_framework.test import APIClient
 from rest_framework.throttling import ScopedRateThrottle
 
 from apps.audit_logs import actions
@@ -97,6 +102,38 @@ def test_refresh_rotates_and_old_refresh_is_rejected(api_client, resident):
     refreshed = api_client.post("/api/v1/auth/token/refresh/", {"refresh": first["refresh"]})
     assert refreshed.status_code == 200 and refreshed.json()["refresh"] != first["refresh"]
     replay = api_client.post("/api/v1/auth/token/refresh/", {"refresh": first["refresh"]})
+    assert replay.status_code == 401
+
+
+@pytest.mark.django_db(transaction=True)
+def test_concurrent_refresh_requests_only_rotate_once(resident):
+    """Two API workers cannot both rotate the same refresh token."""
+    tokens = login(APIClient(), "res@example.com", PASSWORD).json()
+    barrier = Barrier(2)
+
+    def refresh_once():
+        close_old_connections()
+        try:
+            client = APIClient()
+            barrier.wait(timeout=10)
+            response = client.post(
+                "/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]}
+            )
+            body = response.json() if response.status_code == 200 else None
+            return response.status_code, body
+        finally:
+            close_old_connections()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _: refresh_once(), range(2)))
+
+    assert sorted(status for status, _ in results) == [200, 401]
+    winner = next(body for status, body in results if status == 200)
+    assert winner["refresh"] != tokens["refresh"]
+
+    replay = APIClient().post(
+        "/api/v1/auth/token/refresh/", {"refresh": tokens["refresh"]}
+    )
     assert replay.status_code == 401
 
 
