@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/api/api_client.dart';
 import 'core/auth/auth_repository.dart';
+import 'core/notifications/push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/registration_screen.dart';
@@ -54,6 +55,14 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
               PassScreen(invitationId: state.pathParameters['id']!)),
     ],
   );
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.instance.setTapHandler((resourceId) {
+      if (mounted) _router.go('/passes/$resourceId');
+    });
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
