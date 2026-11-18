@@ -2,9 +2,6 @@ import http from "node:http";
 
 let refreshAttempts = 0;
 const server = http.createServer(async (request, response) => {
-  const chunks = [];
-  for await (const chunk of request) chunks.push(chunk);
-  const body = Buffer.concat(chunks).toString("utf8");
   const send = (status, data) => {
     response.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
     response.end(data === null ? "" : JSON.stringify(data));
