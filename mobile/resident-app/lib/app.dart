@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -61,6 +63,12 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
     super.initState();
     PushNotificationService.instance.setTapHandler((resourceId) {
       if (mounted) _router.go('/passes/$resourceId');
+    });
+    ref.read(apiClientProvider).hasSession().then((hasSession) {
+      if (hasSession) {
+        unawaited(PushNotificationService.instance
+            .start(ref.read(apiClientProvider).dio));
+      }
     });
   }
 
