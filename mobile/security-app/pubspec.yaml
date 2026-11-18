@@ -1,0 +1,20 @@
+name: estate_security_app
+description: Security gate application for Estate Visitor Access Management.
+publish_to: "none"
+version: 0.1.0+1
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  material_ui: ^1.11.1
+  dio: ^5.8.0+1
+  flutter_secure_storage: ^9.2.4
+  mobile_scanner: ^6.0.2
+  intl: ^0.20.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+flutter:
+  uses-material-design: true
