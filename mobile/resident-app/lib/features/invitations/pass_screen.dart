@@ -223,7 +223,7 @@ class _PassScreenState extends ConsumerState<PassScreen> {
                 );
                 if (confirmed == true) {
                   await _cancel();
-                  if (!mounted) return;
+                  if (!context.mounted) return;
                   context.pop();
                 }
               },
