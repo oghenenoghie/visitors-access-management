@@ -12,16 +12,19 @@ class InvitationRepository {
   final FlutterSecureStorage storage;
 
   Future<List<Map<String, dynamic>>> activeUnits() async {
-    final response = await api.dio.get('resident-unit-assignments/', queryParameters: {'status': 'active'});
+    final response = await api.dio.get('resident-unit-assignments/',
+        queryParameters: {'status': 'active'});
     final data = response.data;
-    final rows = data is Map ? data['results'] as List? ?? [] : data as List? ?? [];
+    final rows =
+        data is Map ? data['results'] as List? ?? [] : data as List? ?? [];
     return rows.map((row) => Map<String, dynamic>.from(row as Map)).toList();
   }
 
   Future<List<Map<String, dynamic>>> invitations() async {
     final response = await api.dio.get('invitations/');
     final data = response.data;
-    final rows = data is Map ? data['results'] as List? ?? [] : data as List? ?? [];
+    final rows =
+        data is Map ? data['results'] as List? ?? [] : data as List? ?? [];
     return rows.map((row) => Map<String, dynamic>.from(row as Map)).toList();
   }
 
@@ -46,7 +49,8 @@ class InvitationRepository {
       if (maxUses != null) 'max_uses': maxUses,
     };
     final random = Random.secure();
-    final idempotencyKey = List.generate(32, (_) => random.nextInt(16).toRadixString(16)).join();
+    final idempotencyKey =
+        List.generate(32, (_) => random.nextInt(16).toRadixString(16)).join();
     final response = await api.dio.post(
       'invitations/',
       data: payload,
@@ -57,7 +61,10 @@ class InvitationRepository {
     final id = invitation['id'] as String;
     await storage.write(
       key: 'estate.pass.$id',
-      value: jsonEncode({'qr_token': result['qr_token'], 'access_code': result['access_code']}),
+      value: jsonEncode({
+        'qr_token': result['qr_token'],
+        'access_code': result['access_code']
+      }),
     );
     return result;
   }

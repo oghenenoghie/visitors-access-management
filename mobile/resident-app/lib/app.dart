@@ -13,9 +13,12 @@ import 'features/home/home_screen.dart';
 import 'features/invitations/create_invitation_screen.dart';
 import 'features/invitations/pass_screen.dart';
 
-final secureStorageProvider = Provider<FlutterSecureStorage>((ref) => const FlutterSecureStorage());
-final apiClientProvider = Provider<ApiClient>((ref) => ApiClient(ref.watch(secureStorageProvider)));
-final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository(ref.watch(apiClientProvider), ref.watch(secureStorageProvider)));
+final secureStorageProvider =
+    Provider<FlutterSecureStorage>((ref) => const FlutterSecureStorage());
+final apiClientProvider =
+    Provider<ApiClient>((ref) => ApiClient(ref.watch(secureStorageProvider)));
+final authRepositoryProvider = Provider<AuthRepository>((ref) => AuthRepository(
+    ref.watch(apiClientProvider), ref.watch(secureStorageProvider)));
 
 class EstateResidentApp extends ConsumerStatefulWidget {
   const EstateResidentApp({super.key});
@@ -35,19 +38,28 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
     },
     routes: [
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (context, state) => const RegistrationScreen()),
+      GoRoute(
+          path: '/register',
+          builder: (context, state) => const RegistrationScreen()),
       GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-      GoRoute(path: '/history', builder: (context, state) => const VisitorHistoryScreen()),
-      GoRoute(path: '/invitations/new', builder: (context, state) => const CreateInvitationScreen()),
-      GoRoute(path: '/passes/:id', builder: (context, state) => PassScreen(invitationId: state.pathParameters['id']!)),
+      GoRoute(
+          path: '/history',
+          builder: (context, state) => const VisitorHistoryScreen()),
+      GoRoute(
+          path: '/invitations/new',
+          builder: (context, state) => const CreateInvitationScreen()),
+      GoRoute(
+          path: '/passes/:id',
+          builder: (context, state) =>
+              PassScreen(invitationId: state.pathParameters['id']!)),
     ],
   );
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(
-    title: 'Estate Access',
-    debugShowCheckedModeBanner: false,
-    theme: AppTheme.light,
-    routerConfig: _router,
-  );
+        title: 'Estate Access',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.light,
+        routerConfig: _router,
+      );
 }
