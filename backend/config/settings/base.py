@@ -190,6 +190,10 @@ CELERY_BROKER_URL = env("CELERY_BROKER_URL", default=REDIS_URL or "memory://")
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_TIMEZONE = TIME_ZONE
 
+# Push delivery remains disabled until a Firebase service account is configured.
+FCM_ENABLED = env.bool("FCM_ENABLED", default=False)
+FCM_SERVICE_ACCOUNT_JSON = env("FCM_SERVICE_ACCOUNT_JSON", default="")
+
 # Transport security (production)
 if BEHIND_PROXY:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
