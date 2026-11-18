@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../api/api_client.dart';
+import '../notifications/push_notification_service.dart';
 
 class AuthRepository {
   AuthRepository(this.api, this.storage);
@@ -40,6 +41,7 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
+    await PushNotificationService.instance.stop();
     final refresh = await storage.read(key: ApiClient.refreshTokenKey);
     try {
       if (refresh != null) {
