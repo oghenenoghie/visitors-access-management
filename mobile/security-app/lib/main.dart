@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -90,6 +92,7 @@ class _GateApi {
   }
 
   Future<void> clearSession() async {
+    await PushNotificationService.instance.stop();
     await _storage.delete(key: _accessKey);
     await _storage.delete(key: _refreshKey);
   }
@@ -189,14 +192,12 @@ class _SecurityGateAppState extends State<SecurityGateApp> {
   @override
   void initState() {
     super.initState();
-    PushNotificationService.instance.setTapHandler((resourceId) {
-      if (mounted) setState(() => _tab = 1);
-    });
     _restore();
   }
 
   Future<void> _restore() async {
     final signedIn = await _api.hasSession();
+    if (signedIn) unawaited(PushNotificationService.instance.start(_api.dio));
     if (mounted)
       setState(() {
         _signedIn = signedIn;
@@ -376,6 +377,14 @@ class GateHome extends StatefulWidget {
 class _GateHomeState extends State<GateHome> {
   int _tab = 0;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.instance.setTapHandler((resourceId) {
+      if (mounted) setState(() => _tab = 1);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
