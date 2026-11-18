@@ -81,8 +81,25 @@ async function handle(request: NextRequest, context: RouteContext) {
   const body = method === "GET" ? "" : await request.text();
 
   if (isLogout) {
-    if (access && refresh) {
-      await upstream("auth/logout/", "POST", JSON.stringify({ refresh }), access).catch(() => null);
+    if (refresh) {
+      let logoutAccess = access;
+      let logoutRefresh = refresh;
+      let logoutResponse = logoutAccess
+        ? await upstream("auth/logout/", "POST", JSON.stringify({ refresh: logoutRefresh }), logoutAccess).catch(() => null)
+        : null;
+      if (!logoutResponse || logoutResponse.status === 401) {
+        const renewed = await refreshSession(refresh).catch(() => null);
+        if (renewed?.access) {
+          logoutAccess = renewed.access;
+          logoutRefresh = renewed.refresh || refresh;
+          logoutResponse = await upstream(
+            "auth/logout/",
+            "POST",
+            JSON.stringify({ refresh: logoutRefresh }),
+            logoutAccess,
+          ).catch(() => null);
+        }
+      }
     }
     return relay(new Response(null, { status: 204 }), undefined, true);
   }
