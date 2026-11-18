@@ -22,24 +22,33 @@ jobs:
         working-directory: mobile/resident-app
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.ref || github.ref }}
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
       - run: flutter create --platforms=android --org com.estateaccess .
       - run: flutter pub get
-      - run: dart format mobile/resident-app/lib mobile/resident-app/test
+      - name: Migrate Material UI imports
+        run: dart fix --apply --code=migrate_design_widgets
+      - name: Apply Dart lint fixes
+        run: dart fix --apply
+      - name: Format Dart sources
+        run: dart format lib test
       - name: Commit formatter output on same-repository pull requests
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          git add mobile/resident-app/lib mobile/resident-app/test
+          git add lib test
           if ! git diff --cached --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "style(m5): format resident app Dart sources"
-            git push
+            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
           fi
-      - run: dart format --output=none --set-exit-if-changed mobile/resident-app/lib mobile/resident-app/test
+      - name: Verify Dart formatting
+        run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test
       - run: flutter build apk --debug
