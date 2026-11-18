@@ -1,9 +1,40 @@
+from django.db import transaction
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenBackendError
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+from rest_framework_simplejwt.state import token_backend
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
 
 from apps.estates.models import EstateMembership
 from apps.users.models import User
 
 from .totp import is_enrolled
+
+
+class LockedTokenRefreshSerializer(TokenRefreshSerializer):
+    """
+    Serialize refresh-token rotation across API workers using PostgreSQL row locks.
+
+    Decode the signed token to identify its outstanding-token row, lock that row,
+    then let Simple JWT perform blacklist validation and rotation while the lock
+    is held. A concurrent request waits and observes the blacklist written by
+    the first successful rotation.
+    """
+
+    def validate(self, attrs):
+        raw_refresh = attrs["refresh"]
+        try:
+            payload = token_backend.decode(raw_refresh, verify=True)
+            token_id = payload["jti"]
+        except (TokenBackendError, KeyError) as exc:
+            raise InvalidToken("Token is invalid or expired.") from exc
+
+        with transaction.atomic():
+            try:
+                OutstandingToken.objects.select_for_update().get(jti=token_id)
+            except OutstandingToken.DoesNotExist as exc:
+                raise InvalidToken("Token is not recognized.") from exc
+            return super().validate(attrs)
 
 
 class LoginSerializer(serializers.Serializer):
