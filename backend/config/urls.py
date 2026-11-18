@@ -14,6 +14,7 @@ urlpatterns = [
     path("api/v1/", include("apps.authentication.urls")),
     path("api/v1/", include("apps.audit_logs.urls")),
     path("api/v1/", include("apps.access_control.urls")),
+    path("api/v1/", include("apps.notifications.urls")),
 ]
 
 if settings.API_DOCS_ENABLED:
