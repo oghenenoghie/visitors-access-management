@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
 from apps.common.crypto import encrypt, hmac_digest
@@ -28,10 +30,15 @@ def deactivate_device(*, user, token):
 
 
 def create_notification(*, user, notification_type, title, body, data=None):
-    return Notification.objects.create(
+    notification = Notification.objects.create(
         user=user,
         notification_type=notification_type,
         title=title,
         body=body,
         data=data or {},
     )
+    if settings.FCM_ENABLED:
+        from .tasks import deliver_push_notification
+
+        transaction.on_commit(lambda: deliver_push_notification.delay(str(notification.pk)))
+    return notification
