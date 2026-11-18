@@ -1,7 +1,11 @@
+import 'dart:io';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -61,7 +65,18 @@ class _PassScreenState extends ConsumerState<PassScreen> {
       'QR token: ${_credentials!['qr_token']}',
       'Present this pass to security at the estate gate.',
     ].join('\n');
-    await Share.share(message, subject: 'Estate visitor pass');
+    final token = _credentials!['qr_token'] as String;
+    final painter = QrPainter(data: token, version: QrVersions.auto, gapless: true);
+    final imageData = await painter.toImageData(1024, format: ui.ImageByteFormat.png);
+    if (imageData == null) return;
+    final directory = await getTemporaryDirectory();
+    final imageFile = File('${directory.path}/estate-visitor-pass-${widget.invitationId}.png');
+    await imageFile.writeAsBytes(imageData.buffer.asUint8List(), flush: true);
+    await Share.shareXFiles(
+      [XFile(imageFile.path)],
+      text: message,
+      subject: 'Estate visitor pass',
+    );
   }
 
   Future<void> _cancel() async {
