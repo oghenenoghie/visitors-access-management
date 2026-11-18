@@ -1,7 +1,7 @@
 name: Mobile CI
 
 permissions:
-  contents: write
+  contents: read
 
 on:
   pull_request:
@@ -26,31 +26,52 @@ jobs:
         working-directory: mobile/${{ matrix.app }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-          ref: ${{ github.event.pull_request.head.ref || github.ref }}
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
       - run: flutter create --platforms=android --org com.estateaccess .
+      - name: Enable Android core library desugaring
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          gradle_file = Path("android/app/build.gradle.kts")
+          source = gradle_file.read_text()
+
+          source, count = re.subn(
+              r"compileOptions\\s*\\{",
+              "compileOptions {\\n        isCoreLibraryDesugaringEnabled = true",
+              source,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit("Could not locate the Android compileOptions block")
+
+          if "coreLibraryDesugaring(" not in source:
+              match = re.search(r"\\ndependencies\\s*\\{", source)
+              if match:
+                  insert_at = match.end()
+                  source = (
+                      source[:insert_at]
+                      + '\\n    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")'
+                      + source[insert_at:]
+                  )
+              else:
+                  source += (
+                      '\\ndependencies {\\n'
+                      '    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")\\n'
+                      '}\\n'
+                  )
+
+          gradle_file.write_text(source)
+          PY
       - run: flutter pub get
       - name: Migrate Material UI imports
         run: dart fix --apply --code=migrate_design_widgets
       - name: Apply Dart lint fixes
         run: dart fix --apply
-      - name: Format Dart sources
-        run: dart format lib test
-      - name: Commit formatter output on same-repository pull requests
-        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        run: |
-          git add lib test
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "style(mobile): format ${{ matrix.app }} sources"
-            git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
-          fi
       - name: Verify Dart formatting
         run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
