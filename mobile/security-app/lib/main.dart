@@ -2,8 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'push_notification_service.dart';
 
-void main() => runApp(const SecurityGateApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PushNotificationService.instance.initialize();
+  runApp(const SecurityGateApp());
+}
 
 const _storage = FlutterSecureStorage();
 const _accessKey = 'estate.access';
@@ -81,6 +86,7 @@ class _GateApi {
   Future<void> saveSession(Map<String, dynamic> data) async {
     await _storage.write(key: _accessKey, value: data['access'] as String);
     await _storage.write(key: _refreshKey, value: data['refresh'] as String);
+    unawaited(PushNotificationService.instance.start(dio));
   }
 
   Future<void> clearSession() async {
@@ -158,6 +164,7 @@ class _GateApi {
   }
 
   Future<void> logout() async {
+    await PushNotificationService.instance.stop();
     final refreshToken = await _storage.read(key: _refreshKey);
     try {
       if (refreshToken != null) {
@@ -182,6 +189,9 @@ class _SecurityGateAppState extends State<SecurityGateApp> {
   @override
   void initState() {
     super.initState();
+    PushNotificationService.instance.setTapHandler((resourceId) {
+      if (mounted) setState(() => _tab = 1);
+    });
     _restore();
   }
 
