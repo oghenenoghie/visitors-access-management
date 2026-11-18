@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/api/api_client.dart';
 import 'core/auth/auth_repository.dart';
+import 'core/notifications/push_notification_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/registration_screen.dart';
@@ -54,6 +57,20 @@ class _EstateResidentAppState extends ConsumerState<EstateResidentApp> {
               PassScreen(invitationId: state.pathParameters['id']!)),
     ],
   );
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.instance.setTapHandler((resourceId) {
+      if (mounted) _router.go('/passes/$resourceId');
+    });
+    ref.read(apiClientProvider).hasSession().then((hasSession) {
+      if (hasSession) {
+        unawaited(PushNotificationService.instance
+            .start(ref.read(apiClientProvider).dio));
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) => MaterialApp.router(

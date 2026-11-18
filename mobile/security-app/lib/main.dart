@@ -1,9 +1,16 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'push_notification_service.dart';
 
-void main() => runApp(const SecurityGateApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await PushNotificationService.instance.initialize();
+  runApp(const SecurityGateApp());
+}
 
 const _storage = FlutterSecureStorage();
 const _accessKey = 'estate.access';
@@ -69,8 +76,9 @@ class _GateApi {
       final data = Map<String, dynamic>.from(response.data as Map);
       await _storage.write(key: _accessKey, value: data['access'] as String);
       final rotated = data['refresh'] as String?;
-      if (rotated != null)
+      if (rotated != null) {
         await _storage.write(key: _refreshKey, value: rotated);
+      }
       return true;
     } on DioException {
       await clearSession();
@@ -81,9 +89,11 @@ class _GateApi {
   Future<void> saveSession(Map<String, dynamic> data) async {
     await _storage.write(key: _accessKey, value: data['access'] as String);
     await _storage.write(key: _refreshKey, value: data['refresh'] as String);
+    unawaited(PushNotificationService.instance.start(dio));
   }
 
   Future<void> clearSession() async {
+    await PushNotificationService.instance.stop();
     await _storage.delete(key: _accessKey);
     await _storage.delete(key: _refreshKey);
   }
@@ -137,8 +147,9 @@ class _GateApi {
   Future<List<Map<String, dynamic>>> activity() async {
     final response = await dio.get('gate/activity/');
     final data = response.data;
-    if (data is List)
+    if (data is List) {
       return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+    }
     if (data is Map && data['results'] is List) {
       return (data['results'] as List)
           .map((e) => Map<String, dynamic>.from(e as Map))
@@ -158,6 +169,7 @@ class _GateApi {
   }
 
   Future<void> logout() async {
+    await PushNotificationService.instance.stop();
     final refreshToken = await _storage.read(key: _refreshKey);
     try {
       if (refreshToken != null) {
@@ -187,11 +199,13 @@ class _SecurityGateAppState extends State<SecurityGateApp> {
 
   Future<void> _restore() async {
     final signedIn = await _api.hasSession();
-    if (mounted)
+    if (signedIn) unawaited(PushNotificationService.instance.start(_api.dio));
+    if (mounted) {
       setState(() {
         _signedIn = signedIn;
         _checking = false;
       });
+    }
   }
 
   @override
@@ -368,6 +382,14 @@ class _GateHomeState extends State<GateHome> {
   String? _error;
 
   @override
+  void initState() {
+    super.initState();
+    PushNotificationService.instance.setTapHandler((resourceId) {
+      if (mounted) setState(() => _tab = 1);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     if (_gateDeviceId.isEmpty) {
       return Scaffold(
@@ -502,8 +524,9 @@ class _GateOperationsState extends State<GateOperations> {
                     borderRadius: BorderRadius.circular(18),
                     child: MobileScanner(onDetect: (capture) {
                       final value = capture.barcodes.firstOrNull?.rawValue;
-                      if (value != null && value.isNotEmpty && !_busy)
+                      if (value != null && value.isNotEmpty && !_busy) {
                         _verify(value);
+                      }
                     })))),
       const SizedBox(height: 18),
       TextField(
@@ -633,13 +656,15 @@ class _GateActivityState extends State<GateActivity> {
       FutureBuilder<List<Map<String, dynamic>>>(
         future: _future,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError)
+          }
+          if (snapshot.hasError) {
             return Center(
                 child: TextButton(
                     onPressed: _refresh,
                     child: const Text('Unable to load activity. Retry')));
+          }
           final events = snapshot.data ?? [];
           if (events.isEmpty) {
             return RefreshIndicator(

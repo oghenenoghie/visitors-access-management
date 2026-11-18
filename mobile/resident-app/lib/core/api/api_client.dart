@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+import '../notifications/push_notification_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiClient {
@@ -76,9 +79,11 @@ class ApiClient {
       {required String access, required String refresh}) async {
     await storage.write(key: accessTokenKey, value: access);
     await storage.write(key: refreshTokenKey, value: refresh);
+    unawaited(PushNotificationService.instance.start(dio));
   }
 
   Future<void> clearSession() async {
+    await PushNotificationService.instance.stop();
     await storage.delete(key: accessTokenKey);
     await storage.delete(key: refreshTokenKey);
   }
