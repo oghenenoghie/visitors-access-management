@@ -187,8 +187,7 @@ class PushNotificationService {
       final decoded = jsonDecode(payload);
       if (decoded is Map) {
         final id = decoded['resource_id'];
-        if (id is String &&
-            RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(id)) {
+        if (id is String && RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(id)) {
           _onInvitationTap?.call(id);
         }
       }
