@@ -82,7 +82,7 @@ export default function LoginPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, padding: 18, margin: "22px 0", background: "#f4f6f8", borderRadius: 12 }}>
           {recoveryCodes.map(code => <code key={code} style={{ fontSize: 15, fontWeight: 700, letterSpacing: ".08em" }}>{code}</code>)}
         </div>
-        <button type="button" className="primary-btn" style={{ width: "100%", padding: 13 }} onClick={() => void navigator.clipboard.writeText(recoveryCodes.join("\\n"))}>Copy recovery codes</button>
+        <button type="button" className="primary-btn" style={{ width: "100%", padding: 13 }} onClick={() => void navigator.clipboard.writeText(recoveryCodes.join("\n"))}>Copy recovery codes</button>
         <button type="button" className="primary-btn" style={{ width: "100%", padding: 13, marginTop: 10 }} onClick={() => router.replace("/")}>I have saved my codes — continue</button>
       </section>
     </main>;
