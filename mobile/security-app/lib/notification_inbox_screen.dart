@@ -11,7 +11,8 @@ class GateNotificationInboxScreen extends StatefulWidget {
       _GateNotificationInboxScreenState();
 }
 
-class _GateNotificationInboxScreenState extends State<GateNotificationInboxScreen> {
+class _GateNotificationInboxScreenState
+    extends State<GateNotificationInboxScreen> {
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
   String? _error;
@@ -92,7 +93,9 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
       if (!mounted) return;
       setState(() => _marking.remove(id));
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not mark this notification as read.')),
+        const SnackBar(
+          content: Text('Could not mark this notification as read.'),
+        ),
       );
     }
   }
@@ -162,7 +165,8 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
                                   Icon(
                                     Icons.notifications_none_rounded,
                                     size: 44,
-                                    color: Theme.of(context).colorScheme.outline,
+                                    color:
+                                        Theme.of(context).colorScheme.outline,
                                   ),
                                   const SizedBox(height: 12),
                                   Center(
@@ -173,7 +177,8 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
                                 ],
                               )
                             : ListView.separated(
-                                padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 8, 16, 28),
                                 itemCount: visible.length,
                                 separatorBuilder: (_, __) =>
                                     const SizedBox(height: 8),
@@ -202,7 +207,8 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
                                                 .surfaceContainerHighest,
                                         child: Icon(
                                           isUnread
-                                              ? Icons.notifications_active_outlined
+                                              ? Icons
+                                                  .notifications_active_outlined
                                               : Icons.notifications_none_rounded,
                                         ),
                                       ),
