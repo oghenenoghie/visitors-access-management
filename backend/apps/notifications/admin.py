@@ -16,4 +16,13 @@ class NotificationAdmin(admin.ModelAdmin):
     list_display = ("user", "notification_type", "title", "read_at", "created_at")
     list_filter = ("notification_type",)
     search_fields = ("user__email", "title", "body")
-    readonly_fields = ("user", "notification_type", "title", "body", "data", "read_at", "created_at", "updated_at")
+    readonly_fields = (
+        "user",
+        "notification_type",
+        "title",
+        "body",
+        "data",
+        "read_at",
+        "created_at",
+        "updated_at",
+    )
