@@ -30,6 +30,10 @@ class PushNotificationService {
   bool _initialized = false;
   bool _available = false;
 
+  void setTapHandler(void Function(String resourceId)? handler) {
+    _onInvitationTap = handler;
+  }
+
   Future<void> initialize() async {
     if (_initialized) return;
     _initialized = true;
