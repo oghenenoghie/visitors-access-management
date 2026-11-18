@@ -121,6 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   const SizedBox(height: 20),
                   const Center(child: Text('Access is available to residents approved by estate management.', textAlign: TextAlign.center, style: TextStyle(color: AppColors.muted, fontSize: 12, height: 1.5))),
+                  if (!awaitingCode) Center(child: TextButton(onPressed: () => context.push('/register'), child: const Text('New resident? Request access'))),
                 ],
               ),
             ),
