@@ -1,7 +1,13 @@
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-const API_BASE = (process.env.ESTATE_API_BASE_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api/v1").replace(/\/$/, "");
+function apiBase() {
+  const configured = process.env.ESTATE_API_BASE_URL;
+  if (!configured && process.env.NODE_ENV === "production") {
+    throw new Error("ESTATE_API_BASE_URL must be configured in production.");
+  }
+  return (configured || "http://localhost:8000/api/v1").replace(/\/$/, "");
+}
 const ACCESS_COOKIE = "estate_access";
 const REFRESH_COOKIE = "estate_refresh";
 const ACCESS_TTL = 15 * 60;
@@ -9,13 +15,7 @@ const REFRESH_TTL = 7 * 24 * 60 * 60;
 type RouteContext = { params: Promise<{ path: string[] }> };
 
 function cookieOptions(maxAge: number) {
-  return {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
-    path: "/api/bff",
-    maxAge,
-  };
+  return { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict" as const, path: "/api/bff", maxAge };
 }
 function setSession(response: NextResponse, access: string, refresh?: string) {
   response.cookies.set(ACCESS_COOKIE, access, cookieOptions(ACCESS_TTL));
@@ -29,11 +29,9 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ detail: message }, { status, headers: { "Cache-Control": "no-store" } });
 }
 async function refreshSession(refresh: string) {
-  const response = await fetch(API_BASE + "/auth/token/refresh/", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ refresh }),
-    cache: "no-store",
+  const response = await fetch(apiBase() + "/auth/token/refresh/", {
+    method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ refresh }), cache: "no-store",
   });
   if (!response.ok) return null;
   return await response.json() as { access: string; refresh?: string };
@@ -42,13 +40,7 @@ async function upstream(path: string, method: string, body: string, access?: str
   const headers = new Headers({ Accept: "application/json" });
   if (body) headers.set("Content-Type", "application/json");
   if (access) headers.set("Authorization", "Bearer " + access);
-  return fetch(API_BASE + "/" + path, {
-    method,
-    headers,
-    body: body || undefined,
-    cache: "no-store",
-    redirect: "manual",
-  });
+  return fetch(apiBase() + "/" + path, { method, headers, body: body || undefined, cache: "no-store", redirect: "manual" });
 }
 async function relay(response: Response, cookiesToSet?: { access: string; refresh?: string }, clear = false) {
   const text = response.status === 204 ? null : await response.text();
@@ -92,12 +84,7 @@ async function handle(request: NextRequest, context: RouteContext) {
         if (renewed?.access) {
           logoutAccess = renewed.access;
           logoutRefresh = renewed.refresh || refresh;
-          logoutResponse = await upstream(
-            "auth/logout/",
-            "POST",
-            JSON.stringify({ refresh: logoutRefresh }),
-            logoutAccess,
-          ).catch(() => null);
+          logoutResponse = await upstream("auth/logout/", "POST", JSON.stringify({ refresh: logoutRefresh }), logoutAccess).catch(() => null);
         }
       }
     }
@@ -106,16 +93,12 @@ async function handle(request: NextRequest, context: RouteContext) {
 
   let response = await upstream(path, method, body, isLogin || isTwoFactor ? undefined : access);
   let rotated: { access: string; refresh?: string } | undefined;
-
   if (response.status === 401 && !isLogin && !isTwoFactor && refresh) {
     const renewed = await refreshSession(refresh).catch(() => null);
     if (renewed?.access) {
       rotated = renewed;
       response = await upstream(path, method, body, renewed.access);
     } else {
-      // Another in-flight request may already have rotated this refresh token.
-      // Do not expire cookies here: its successful response may be setting the
-      // replacement session cookies in the browser at the same time.
       return jsonError("Session refresh conflicted with another request. Retry shortly.", 409);
     }
   }
@@ -132,7 +115,6 @@ async function handle(request: NextRequest, context: RouteContext) {
     }
     return NextResponse.json(data, { status: response.status, headers: { "Cache-Control": "no-store" } });
   }
-
   return relay(response, rotated, response.status === 401);
 }
 
