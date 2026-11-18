@@ -2,14 +2,16 @@
 
 Estate platform connecting residents, security officers and administrators:
 
-- **Resident app** (Android, Flutter): create visitor invitations, QR passes, history.
+- **Resident app** (Android, Flutter): create visitor invitations, QR passes, share credentials and view visitor history.
 - **Security app** (Android, Flutter): scan or enter codes, verify, record entry and exit.
 - **Admin dashboard** (Next.js): residents, units, gate monitoring, reports, audit logs.
 - **Backend** (Django REST, PostgreSQL): single source of truth for auth, permissions and access decisions.
 
 ## Status
 
-Architecture approved. M1 (foundation), M2 (authentication and roles) and M3 (residents and properties) are merged to `main`. M4 (access engine) is implemented on `feat/m4-access-engine` and PR #6 is ready for review: resident-authorised invitations, hashed QR/manual credentials, gate verification, transactional check-in/out, supervisor override and append-only access events. CI passes with 141 tests. See [M4 implementation notes](documentation/implementation/m4-access-engine.md).
+M1 (foundation), M2 (authentication and roles), M3 (residents and properties) and M4 (access engine) are merged to `main`. M4 PR #6 was merged on 18 November 2026 at `78ef1e877cd5ba936e36af540780ea756a9fd4dd`. The access engine includes estate-scoped invitations, hashed QR/manual credentials, gate verification, transactional check-in/out, supervisor override and append-only access events. Its PostgreSQL-backed test suite passed with 141 tests.
+
+M5 is in progress on `feat/m5-resident-app`. The first Flutter vertical slice includes Material 3 foundations, resident sign-in and TOTP challenge handling, secure JWT storage/refresh, resident dashboard, active unit lookup, invitation creation, QR/manual pass display, native sharing and cancellation. FCM remains scheduled for M8. See [M5 implementation notes](documentation/implementation/m5-resident-app.md).
 
 ## Documentation
 

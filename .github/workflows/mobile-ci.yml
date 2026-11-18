@@ -1,0 +1,45 @@
+name: Mobile CI
+
+permissions:
+  contents: write
+
+on:
+  pull_request:
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+
+jobs:
+  resident-app:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile/resident-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter create --platforms=android --org com.estateaccess .
+      - run: flutter pub get
+      - run: dart format mobile/resident-app/lib mobile/resident-app/test
+      - name: Commit formatter output on same-repository pull requests
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          git add mobile/resident-app/lib mobile/resident-app/test
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "style(m5): format resident app Dart sources"
+            git push
+          fi
+      - run: dart format --output=none --set-exit-if-changed mobile/resident-app/lib mobile/resident-app/test
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --debug
