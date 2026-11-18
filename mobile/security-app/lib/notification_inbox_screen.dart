@@ -18,8 +18,7 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
   bool _unreadOnly = false;
   final Set<String> _marking = {};
 
-  int get _unreadCount =>
-      _items.where((item) => item['read_at'] == null).length;
+  int _unreadCount = 0;
 
   @override
   void initState() {
@@ -42,10 +41,15 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
       _error = null;
     });
     try {
-      final response = await widget.api.get('notifications/');
+      final responses = await Future.wait([
+        widget.api.get('notifications/'),
+        widget.api.get('notifications/unread-count/'),
+      ]);
       if (!mounted) return;
       setState(() {
-        _items = _parseRows(response.data);
+        _items = _parseRows(responses[0].data);
+        _unreadCount =
+            (responses[1].data as Map)['unread_count'] as int? ?? 0;
         _loading = false;
       });
     } on DioException catch (error) {
@@ -75,7 +79,13 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
       final updated = Map<String, dynamic>.from(response.data as Map);
       setState(() {
         final index = _items.indexWhere((entry) => entry['id'] == id);
-        if (index >= 0) _items[index] = updated;
+        if (index >= 0) {
+          final wasUnread = _items[index]['read_at'] == null;
+          _items[index] = updated;
+          if (wasUnread && updated['read_at'] != null && _unreadCount > 0) {
+            _unreadCount--;
+          }
+        }
         _marking.remove(id);
       });
     } on DioException {
@@ -174,7 +184,6 @@ class _GateNotificationInboxScreenState extends State<GateNotificationInboxScree
                                   final createdAt = DateTime.tryParse(
                                     item['created_at']?.toString() ?? '',
                                   );
-                                  final data = item['data'];
                                   final marking = _marking.contains(id);
                                   return Card(
                                     child: ListTile(
